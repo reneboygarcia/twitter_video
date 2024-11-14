@@ -36,6 +36,7 @@ dist/
 build/
 out/
 venv/
+twit_venv/
 
 # Environment files
 .env
