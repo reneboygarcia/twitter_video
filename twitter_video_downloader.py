@@ -34,11 +34,11 @@ def download_twitter_video(url: str) -> None:
         
         # Configure yt-dlp options
         ydl_opts = {
-            'outtmpl': f'{output_dir}/%(title)s.%(ext)s',
+            'outtmpl': f'{output_dir}/%(id)s.%(ext)s',
             'format': 'best',
             'quiet': False,
             'no_warnings': False,
-            'extract_flat': True,  # Add this to handle Twitter's new structure
+            'extract_flat': True,
             'progress_hooks': [progress_hook]
         }
         
