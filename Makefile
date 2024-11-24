@@ -26,7 +26,7 @@ help:
 	@echo ""
 	@echo "For more details, visit: https://github.com/yourusername/twitter-video-dl"
 
-dev-setup:
+dev-setup: clean
 	@echo "📦 Creating virtual environment..."
 	@$(PYTHON) -m venv $(VENV_NAME)
 	@echo "✅ Virtual environment created!"

@@ -1,3 +1,6 @@
+# Start Generation Here
+![Twitter Video Downloader Banner](./banner/banner_twitter.png)
+
 # Twitter Video Downloader
 
 This tool helps you download videos from Twitter/X using `yt-dlp`. It's designed to be easy to use and deploy.
