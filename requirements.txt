@@ -1,3 +1,13 @@
-yt-dlp
-requests
-tqdm
+# Core dependencies
+click>=8.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+yt-dlp==2024.11.4
+tqdm==4.66.4
+questionary>=1.10.0
+rich>=13.3.0
+
+# Development dependencies
+pytest>=7.0.0
+black>=23.0.0
+flake8>=6.0.0
