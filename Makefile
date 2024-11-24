@@ -5,6 +5,7 @@ PYTHON := python3
 VENV_NAME := venv
 VENV_BIN := $(VENV_NAME)/bin
 PROJECT_NAME := twitter_video_dl
+SRC_DIR := src/$(PROJECT_NAME)
 
 help:
 	@echo "🛠️  Twitter Video Downloader"
@@ -52,8 +53,8 @@ clean:
 
 format:
 	@echo "🎨 Formatting code..."
-	$(VENV_BIN)/black $(PROJECT_NAME)
-	$(VENV_BIN)/isort $(PROJECT_NAME)
+	$(VENV_BIN)/black $(SRC_DIR)
+	$(VENV_BIN)/isort $(SRC_DIR)
 	@echo "✅ Code formatted!"
 
 test:
