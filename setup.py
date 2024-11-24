@@ -13,7 +13,7 @@ setup(
     long_description_content_type="text/markdown",
     author="reneboygarcia",
     author_email="reneboygarcia@gmail.com",
-    url="https://github.com/reneboygarcia/twitter-video-dl",
+    url="https://github.com/reneboygarcia/twitter_video.git",
     license="MIT",
     packages=find_packages(where="src"),
     package_dir={"": "src"},

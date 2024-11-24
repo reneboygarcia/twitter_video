@@ -1,50 +1,29 @@
 # Twitter Video Downloader
 
-This tool helps you download videos from Twitter/X using `yt-dlp`. It's designed to be easy to use, especially in Google Colab!
+This tool helps you download videos from Twitter/X using `yt-dlp`. It's designed to be easy to use and deploy.
 
-## 🚀 Quick Start (Google Colab)
+## 🚀 Quick Deployment
 
-1. Open this notebook in Google Colab: [Open in Colab](https://colab.research.google.com/github/reneboygarcia/twitter_video/blob/main/twitter_video_downloader.ipynb)
-   
-2. Install required packages:
-   - Click on the first code cell and run: `!pip install yt-dlp requests`
+To get started with the Twitter Video Downloader, follow these steps:
 
-3. Download the video:
-   - Run all cells in the notebook
-   - The video will be downloaded to the `output_video` folder
+1. **Run the Makefile**: This will execute the commands defined in the Makefile, which typically includes installing dependencies and setting up the environment. You can do this by running:
+   ```
+   make dev-setup
+   ```
 
-## 📝 How to Use
+2. **Activate the Virtual Environment**: Before running the tool, ensure that your virtual environment is activated. This isolates your project's dependencies. You can activate it with:
+   ```
+   source venv/bin/activate  # On macOS/Linux
+   .\venv\Scripts\activate   # On Windows
+   ```
 
-1. **Basic Download (Default)**
-   - The video will be downloaded in the best available format
-   - Just run the code as is!
+3. **Run the Tool with the Guide Option**: Finally, you can run the Twitter Video Downloader with the guide option to see usage instructions and available commands:
+   ```
+   twitdl --guide
+   ```
+## ⬇️⬇️ Example
 
-2. **Custom Download Options**
-   - Modify the `ydl_opts` dictionary in the `download_twitter_video` function to customize download options
-   - Example: Change the output template or format
+To test the tool, you can use the following sample link: https://x.com/MIT_CSAIL/status/1363172815315214336
 
-## 🛠️ Setting Up a Virtual Environment
+By following these steps, you will be able to set up and use the Twitter Video Downloader effectively.
 
-To ensure a clean and isolated environment, it's recommended to use a virtual environment. Here's a quick guide:
-
-1. **Create a Virtual Environment:**
-   - Run `python -m venv venv` to create a virtual environment named `venv`.
-
-2. **Activate the Virtual Environment:**
-   - On Windows, run `venv\Scripts\activate`.
-   - On macOS and Linux, run `source venv/bin/activate`.
-
-3. **Install Required Packages:**
-   - Once activated, install the necessary packages using `pip install -r requirements.txt`.
-
-## ⚠️ Important Notes
-
-- Make sure the URL of the Twitter/X video is correct
-- The downloaded video will be saved in the `output_video` folder
-- Download your video from the files panel before closing Colab
-
-## 🆘 Need Help?
-
-If you run into any issues, check that:
-1. The Twitter/X video URL is correct
-2. You've installed the `yt-dlp` and `requests` packages
