@@ -23,7 +23,7 @@ setup(
         "click>=8.0.0",
         "requests>=2.31.0", 
         "python-dotenv>=1.0.0",
-        "yt-dlp>=2024.11.4",  # Using >= instead of == for more flexibility
+        "yt-dlp>=2025.02.19",  # Using >= instead of == for more flexibility
         "tqdm>=4.66.4",       # Using >= instead of == for more flexibility
         "questionary>=1.10.0",
         "rich>=13.3.0",
