@@ -39,8 +39,8 @@ dev-setup: clean
 		echo "🔧 Installing development dependencies..." && \
 		pip install -e ".[dev]" && \
 		echo "✅ Development environment ready!"
-	@echo "🚀 To activate the virtual environment, run: source $(VENV_NAME)/bin/activate"
-	@echo "🚀 Then, you can now run: twitdl --guided"
+	@echo "\033[0;32m🚀 To activate the virtual environment, run: source $(VENV_NAME)/bin/activate"
+	@echo "🚀 Then, you can now run: twitdl --guided\033[0m"
 
 clean:
 	@echo "🧹 Cleaning project..."

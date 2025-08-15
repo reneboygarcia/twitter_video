@@ -84,7 +84,7 @@ class TwitterDownloaderCLI:
                 "Navigation:\n"
                 "• Use ↑/↓ arrows to move\n"
                 "• Press Enter to select\n"
-                "• Press Esc to go back",
+                "• Press Esc or type 'back' to go back",
                 title="🐦 Twitter Video Downloader",
                 border_style="blue",
             )
@@ -136,10 +136,15 @@ class TwitterDownloaderCLI:
     def download_workflow(self) -> None:
         """Handle the video download workflow."""
         if not self.initialize_downloader():
-            if questionary.confirm(
+            setup_choice = questionary.select(
                 "Would you like to configure your settings now?",
-                default=True
-            ).ask():
+                choices=["Yes", "No", "⟵ Back"],
+                instruction="(Use ↑/↓ and Enter)",
+                qmark="🔹"
+            ).ask()
+            if setup_choice in (None, "⟵ Back"):
+                return
+            if setup_choice == "Yes":
                 self.config_workflow()
             return
 
@@ -151,35 +156,37 @@ class TwitterDownloaderCLI:
         # Get video quality
         quality = questionary.select(
             "Select video quality:",
-            choices=["best", "medium", "low"],
+            choices=["best", "medium", "low", "⟵ Back"],
             default="best",
             instruction="(Use ↑/↓ arrows and Enter to select, Esc to go back)",
             qmark="🔹"
         ).ask()
 
-        if quality is None:  # User pressed Esc
+        if quality is None or quality == "⟵ Back":  # User pressed Esc or Back
             return
 
         # Ask for custom path or use default Downloads directory
-        use_custom_path = questionary.confirm(
+        use_custom_path_choice = questionary.select(
             "Do you want to specify a custom save location? (Default: Downloads folder)",
-            default=False,
-            instruction="(Use ←/→ arrows to select, Enter to confirm)",
+            choices=["Yes", "No", "⟵ Back"],
+            instruction="(Use ↑/↓ and Enter)",
             qmark="🔹"
         ).ask()
 
-        if use_custom_path is None:  # User pressed Esc
+        if use_custom_path_choice is None or use_custom_path_choice == "⟵ Back":  # User pressed Esc or Back
             return
 
         output = None
-        if use_custom_path:
+        if use_custom_path_choice == "Yes":
             output = questionary.path(
-                "Enter the output path:",
+                "Enter the output path (type 'back' to return):",
                 default=str(self.downloader._get_downloads_dir()),
                 qmark="🔹"
             ).ask()
 
             if output is None:  # User pressed Esc
+                return
+            if isinstance(output, str) and output.lower() == "back":
                 return
 
         try:
@@ -199,11 +206,11 @@ class TwitterDownloaderCLI:
         """Get and validate tweet URL."""
         while True:
             url = questionary.text(
-                "Enter the tweet URL:",
+                "Enter the tweet URL (type 'back' to return):",
                 validate=lambda x: x.startswith(
                     ("https://twitter.com/", "https://x.com/")
                 ),
-                instruction="(Press Esc to go back)",
+                instruction="(Press Esc or type 'back' to go back)",
                 qmark="🔹"
             ).ask()
 
@@ -240,21 +247,24 @@ class TwitterDownloaderCLI:
         )
 
         if Path(".env").exists():
-            if not questionary.confirm(
+            overwrite_choice = questionary.select(
                 "Configuration file exists. Overwrite?",
-                default=False,
-                instruction="(Use ←/→ arrows to select, Enter to confirm)",
+                choices=["Yes", "No", "⟵ Back"],
+                instruction="(Use ↑/↓ and Enter)",
                 qmark="🔹"
-            ).ask():
+            ).ask()
+            if overwrite_choice in (None, "No", "⟵ Back"):
                 return
 
         token = questionary.password(
-            "Enter your Twitter Bearer Token:",
-            instruction="(Press Esc to cancel)",
+            "Enter your Twitter Bearer Token (type 'back' to cancel):",
+            instruction="(Press Esc or type 'back' to cancel)",
             qmark="🔹"
         ).ask()
 
         if token is None:  # User pressed Esc
+            return
+        if isinstance(token, str) and token.lower() == "back":
             return
 
         with open(".env", "w") as f:
@@ -297,7 +307,7 @@ class TwitterDownloaderCLI:
                 "Navigation:\n"
                 "• Use ↑/↓ arrows to move\n"
                 "• Press Enter to select\n"
-                "• Press Esc to go back\n\n"
+                "• Press Esc or type 'back' to go back\n\n"
                 "For more information, visit: https://github.com/yourusername/twitter-video-dl",
                 title="ℹ️ About Twitter Video Downloader",
                 border_style="blue",
