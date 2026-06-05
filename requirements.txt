@@ -10,4 +10,4 @@ rich>=13.3.0
 # Development dependencies
 pytest>=7.0.0
 black>=23.0.0
-flake8>=6.0.0
+flake8>=7.3.0
