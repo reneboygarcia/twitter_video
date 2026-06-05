@@ -1,4 +1,5 @@
 import sys
+import time
 from functools import wraps
 from typing import Callable, Optional, TypeVar
 
@@ -169,9 +170,11 @@ class TwitterDownloaderCLI:
 
             try:
                 print(f"\nDownloading video from: {url}")
+                start_time = time.time()
                 output_path = self.downloader.download_video(url, output, quality)
+                duration = time.time() - start_time
                 console.print(
-                    f"\n✅ Video downloaded successfully to: {output_path}",
+                    f"\n✅ Video downloaded successfully to: {output_path} (took {duration:.2f} seconds)",
                     style="green",
                 )
             except Exception as e:
@@ -254,9 +257,11 @@ def main(
             q = quality or "best"
             try:
                 print(f"Downloading video from: {url}")
+                start_time = time.time()
                 output_path = cli.downloader.download_video(url, output, q)
+                duration = time.time() - start_time
                 console.print(
-                    f"\n✅ Video downloaded successfully to: {output_path}",
+                    f"\n✅ Video downloaded successfully to: {output_path} (took {duration:.2f} seconds)",
                     style="green",
                 )
             except Exception as e:

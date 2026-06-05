@@ -180,6 +180,9 @@ class TwitterDownloader:
             "quiet": True,  # Changed to True to avoid duplicate progress bars
             "no_warnings": False,
             "http_headers": {"User-Agent": DEFAULT_USER_AGENT},
+            "concurrent_fragment_downloads": 5,
+            "socket_timeout": 10,
+            "retries": 3,
         }
 
         # Add progress hooks

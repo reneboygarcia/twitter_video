@@ -31,6 +31,8 @@ def test_cli_direct_download_success(mock_downloader_class):
         "Video downloaded successfully to: /path/to/downloaded_video.mp4"
         in result.output
     )
+    assert "(took " in result.output
+    assert "seconds)" in result.output
     mock_downloader.download_video.assert_called_once_with(
         url, "custom_path.mp4", "medium"
     )
