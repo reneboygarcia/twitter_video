@@ -92,6 +92,21 @@ class Twitdl < Formula
     virtualenv_install_with_resources
   end
 
+  def caveats
+    <<~EOS
+      Once installed, you can start twitdl from your terminal:
+
+      Interactive mode:
+        twitdl
+
+      Direct download mode:
+        twitdl <tweet-url>
+
+      For full usage options:
+        twitdl --help
+    EOS
+  end
+
   test do
     system "#{bin}/twitdl", "--help"
   end
