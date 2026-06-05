@@ -97,11 +97,22 @@ class TwitterDownloader:
 
         if output:
             custom_path = Path(output)
-            return (
+            if custom_path.is_dir() or output.endswith(("/", "\\")):
+                custom_path.mkdir(parents=True, exist_ok=True)
+                tweet_id = self._extract_tweet_id(url)
+                return custom_path / f"twitter_video_{tweet_id}.mp4"
+
+            resolved_path = (
                 custom_path
                 if custom_path.is_absolute()
                 else downloads_dir / custom_path
             )
+
+            if resolved_path.is_dir():
+                tweet_id = self._extract_tweet_id(url)
+                return resolved_path / f"twitter_video_{tweet_id}.mp4"
+
+            return resolved_path
 
         tweet_id = self._extract_tweet_id(url)
         return downloads_dir / f"twitter_video_{tweet_id}.mp4"

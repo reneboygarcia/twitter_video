@@ -53,6 +53,12 @@ def test_get_output_path():
     assert output_path.name == "video.mp4"
     assert output_path.parent.name == "my_custom_folder"
 
+    # Custom directory path (already exists, e.g. Downloads dir)
+    downloads_dir = downloader._get_downloads_dir()
+    output_path = downloader._get_output_path(url, str(downloads_dir))
+    assert output_path.name == "twitter_video_123456.mp4"
+    assert output_path.parent == downloads_dir
+
 
 @patch("yt_dlp.YoutubeDL")
 def test_download_video_success(mock_ytdl_class):
