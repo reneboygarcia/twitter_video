@@ -90,7 +90,7 @@ jobs:
           trivy fs -f cyclonedx -o sbom.cyclonedx.json .
 
       - name: Upload CycloneDX SBOM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sbom-cyclonedx
           path: sbom.cyclonedx.json
