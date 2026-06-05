@@ -4,6 +4,7 @@
 * Follow the Single Responsibility and Open/Closed Principles with clear, minimal abstractions.
 * Choose explicit, predictable control flow and logic over implicit behavior.
 * Embed runtime checks, validate invariants, and implement comprehensive unit tests for edge cases.
+* Follow strict testing discipline: tests are immutable; iterate on production code until tests pass, and never relax test expectations unless the specification changes or the test contract itself is wrong.
 * Write meaningful, self-explanatory names and concise docstrings, utilizing inline comments only for complex logic.
 * Solve issues methodically step-by-step and perform continuous refactoring before optimizing.
 * Avoid code bloat, eliminate redundancy, and minimize external dependencies.

@@ -34,6 +34,11 @@ This guide documents the development, build, test, and code style guidelines for
     venv/bin/pytest tests -v
     ```
 
+#### Test Discipline
+*   **Immutable Tests**: Tests are considered the source of truth contract. If a test fails and its expectation is correct, do not modify or relax the test. Instead, iterate on and fix the production code until the test passes.
+*   **When to edit tests**: Only adjust or update test cases when the specification itself changes, or if the test was written against the wrong contract/API.
+*   **Isolation**: Keep unit and integration tests focused and isolated.
+
 ### Linting, Formatting, & Type Checking
 *   **Format code (Black & isort):**
     ```bash
