@@ -48,3 +48,6 @@ htmlcov/
 
 # Downloaded Video Outputs
 *.mp4
+
+# SBOM Outputs
+sbom.cyclonedx.json
