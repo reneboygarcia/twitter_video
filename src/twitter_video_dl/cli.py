@@ -63,12 +63,12 @@ class TwitterDownloaderCLI:
         # Configure questionary to use brand-aligned Twitter/X colors
         self.style = questionary.Style(
             [
-                ("qmark", "fg:#1d9bf0 bold"),        # Twitter Blue question marks
+                ("qmark", "fg:#ffffff bold"),        # X White question marks
                 ("question", "bold"),                 # Standard bold question
-                ("answer", "fg:#1d9bf0 bold"),        # Twitter Blue answer
-                ("pointer", "fg:#1d9bf0 bold"),       # Twitter Blue pointer
-                ("highlighted", "fg:#1d9bf0 bold"),   # Twitter Blue highlighted choice
-                ("selected", "fg:#1d9bf0"),           # Twitter Blue selected choice
+                ("answer", "fg:#ffffff bold"),        # X White answer
+                ("pointer", "fg:#ffffff bold"),       # X White pointer
+                ("highlighted", "fg:#ffffff bold"),   # X White highlighted choice
+                ("selected", "fg:#ffffff"),           # X White selected choice
                 ("instruction", "fg:#6e767d italic"), # Muted Twitter Gray instruction tips
             ]
         )
@@ -81,8 +81,8 @@ class TwitterDownloaderCLI:
    \ \_\ \ \__/".~\_\\ \_\  \ \_\ \ \____- \ \_____\ 
     \/_/  \/_/   \/_/ \/_/   \/_/  \/____/  \/_____/ """
         console.print()
-        console.print(f"[bold #1d9bf0]{ascii_art}[/bold #1d9bf0]")
-        console.print("[bold #1d9bf0]🐦 Twitter Video Downloader[/bold #1d9bf0] [dim]v0.1.0[/dim]")
+        console.print(f"[bold #ffffff]{ascii_art}[/bold #ffffff]")
+        console.print("[bold #ffffff]🐦 Twitter Video Downloader[/bold #ffffff] [dim]v0.1.0[/dim]")
         console.print("[#6e767d]A simple, elegant CLI tool to download media from Twitter/X[/#6e767d]")
         console.print()
 
@@ -184,7 +184,7 @@ class TwitterDownloaderCLI:
                     return
 
             try:
-                console.print(f"\n[bold #1d9bf0]🐦 Twitter Video Downloader[/bold #1d9bf0]")
+                console.print(f"\n[bold #ffffff]🐦 Twitter Video Downloader[/bold #ffffff]")
                 console.print(f"[#6e767d]Initiating stream download for:[/#6e767d] {url}\n")
                 start_time = time.time()
                 output_path = self.downloader.download_video(url, output, quality)
@@ -219,7 +219,7 @@ class TwitterDownloaderCLI:
     def show_info(self) -> None:
         """Display information about the tool."""
         console.print()
-        console.print("[bold #1d9bf0]ℹ️ About Twitter Video Downloader[/bold #1d9bf0]")
+        console.print("[bold #ffffff]ℹ️ About Twitter Video Downloader[/bold #ffffff]")
         console.print("A minimal, elegant command-line tool to download videos from Twitter/X.")
         console.print()
         console.print("[bold]Features:[/bold]")
@@ -269,7 +269,7 @@ def main(
             cli.initialize_downloader()
             q = quality or "best"
             try:
-                console.print(f"[bold #1d9bf0]🐦 Twitter Video Downloader[/bold #1d9bf0] [dim]v0.1.0[/dim]")
+                console.print(f"[bold #ffffff]🐦 Twitter Video Downloader[/bold #ffffff] [dim]v0.1.0[/dim]")
                 console.print(f"[#6e767d]Direct download requested for:[/#6e767d] {url}\n")
                 start_time = time.time()
                 output_path = cli.downloader.download_video(url, output, q)
