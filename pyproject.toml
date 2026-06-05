@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "twitter_video_dl"
+version = "0.1.0"
+description = "An interactive CLI tool to download videos from Twitter/X"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "reneboygarcia", email = "reneboygarcia@gmail.com" }]
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "click>=8.0.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "yt-dlp>=2026.02.21",
+    "questionary>=1.10.0",
+    "rich>=13.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "coverage>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/reneboygarcia/twitter_video"
+Repository = "https://github.com/reneboygarcia/twitter_video.git"
+
+[project.scripts]
+twitdl = "twitter_video_dl.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# ── Black ──────────────────────────────────────────────────────────────────────
+[tool.black]
+line-length = 88
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+
+# ── isort ──────────────────────────────────────────────────────────────────────
+[tool.isort]
+profile = "black"
+line_length = 88
+
+# ── Flake8 (via pyproject-flake8 or plain flake8 ≥7 reads this) ───────────────
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203"]
+
+# ── Mypy ───────────────────────────────────────────────────────────────────────
+[tool.mypy]
+ignore_missing_imports = true
+
+# ── Pytest ─────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]

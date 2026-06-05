@@ -29,21 +29,17 @@ help:
 	@echo ""
 	@echo "For more details, visit: https://github.com/reneboygarcia/twitter_video"
 
-dev-setup: clean
+dev-setup:
 	@echo "📦 Creating virtual environment..."
 	@$(PYTHON) -m venv $(VENV_NAME)
 	@echo "✅ Virtual environment created!"
 	@echo "🔧 Installing dependencies..."
 	@. $(VENV_NAME)/bin/activate && \
 		pip install --upgrade pip && \
-		pip install -r requirements.txt && \
-		pip install -e . && \
-		echo "✨ Setup complete!" && \
-		echo "🔧 Installing development dependencies..." && \
 		pip install -e ".[dev]" && \
 		echo "✅ Development environment ready!"
-	@echo "\033[0;32m🚀 To activate the virtual environment, run: source $(VENV_NAME)/bin/activate"
-	@echo "🚀 Then, you can now run: twitdl --guided\033[0m"
+	@echo "\033[0;32m🚀 To activate: source $(VENV_NAME)/bin/activate"
+	@echo "🚀 Then run: twitdl --guided\033[0m"
 
 clean:
 	@echo "🧹 Cleaning project..."
