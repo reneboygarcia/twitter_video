@@ -42,6 +42,13 @@ brew tap reneboygarcia/homebrew-tap
 brew install twitdl
 ```
 
+Once installed, you can start the application from any terminal session by simply running:
+
+```sh
+twitdl
+```
+
+
 ### Manual Installation (From Source)
 
 1. **Clone the repository:**
@@ -58,6 +65,12 @@ brew install twitdl
 3. **Activate environment:**
    ```sh
    source venv/bin/activate  # On Windows: .\venv\Scripts\activate
+   ```
+
+4. **Run the utility:**
+   Once the environment is activated, the command line alias is available locally. Start the interactive tool with:
+   ```sh
+   twitdl
    ```
 
 ---
