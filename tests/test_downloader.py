@@ -134,6 +134,11 @@ def test_get_downloads_dir_platforms():
         dl_dir = downloader._get_downloads_dir()
         assert dl_dir == Path.home() / "Downloads"
 
+def test_get_downloads_dir_fallback():
+    downloader = TwitterDownloader()
+    with patch("pathlib.Path.home", side_effect=RuntimeError("No home directory found")):
+        dl_dir = downloader._get_downloads_dir()
+        assert dl_dir == Path.cwd()
 
 def test_setup_logging_fallback():
     import logging

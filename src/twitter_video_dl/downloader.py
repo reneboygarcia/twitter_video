@@ -87,13 +87,11 @@ class TwitterDownloader:
         }
 
     def _get_downloads_dir(self) -> Path:
-        """Get the system's Downloads directory."""
-        if platform.system() == "Windows":
+        """Get the system's Downloads directory, falling back to CWD on failure."""
+        try:
             return Path.home() / "Downloads"
-        elif platform.system() == "Darwin":  # macOS
-            return Path.home() / "Downloads"
-        else:  # Linux and others
-            return Path.home() / "Downloads"
+        except Exception:
+            return Path.cwd()
 
     def _get_output_path(self, url: str, output: Optional[str] = None) -> Path:
         """Generate output path for the video."""
