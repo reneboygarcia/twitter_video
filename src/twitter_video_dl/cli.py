@@ -1,16 +1,12 @@
-#!/usr/bin/env python3
-
-import os
 import sys
+from functools import wraps
+from typing import Callable, Optional, TypeVar
+
 import click
 import questionary
-from pathlib import Path
-from typing import Optional, Callable, TypeVar
-from functools import wraps
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
-from datetime import datetime
+
 from .downloader import TwitterDownloader
 
 console = Console()
@@ -41,9 +37,7 @@ def handle_errors(func: Callable) -> Callable:
             console.print(f"❌ Error: {str(e)}", style="red")
             console.print("\n💡 Tips:", style="yellow")
             console.print("• Check your internet connection")
-            console.print("• Verify the tweet URL is correct")
-            console.print("• Ensure your bearer token is valid")
-            console.print("\nRun 'make dev-setup' to set up the environment")
+            console.print("• Verify the tweet URL is correct and public")
             return None
 
     return wrapper
@@ -54,23 +48,17 @@ class TwitterDownloaderCLI:
 
     def __init__(self):
         self.downloader = None
-        self._check_environment()
         # Configure questionary to use keyboard shortcuts
-        questionary.Style([
-            ('qmark', 'fg:#673ab7 bold'),     # Colors for the selection indicator
-            ('question', 'bold'),             # Question text
-            ('answer', 'fg:#ff9d00 bold'),    # Selected answer
-            ('pointer', 'fg:#673ab7 bold'),   # Pointer arrow
-            ('highlighted', 'fg:#673ab7 bold'), # Highlighted choice
-            ('selected', 'fg:#cc5454'),       # Selected choice
-        ])
-
-    def _check_environment(self):
-        """Check if the environment is properly set up."""
-        if not Path("venv").exists():
-            console.print("⚠️  Virtual environment not found!", style="yellow")
-            console.print("Please run 'make dev-setup' to set up the environment")
-            sys.exit(1)
+        questionary.Style(
+            [
+                ("qmark", "fg:#673ab7 bold"),  # Colors for the selection indicator
+                ("question", "bold"),  # Question text
+                ("answer", "fg:#ff9d00 bold"),  # Selected answer
+                ("pointer", "fg:#673ab7 bold"),  # Pointer arrow
+                ("highlighted", "fg:#673ab7 bold"),  # Highlighted choice
+                ("selected", "fg:#cc5454"),  # Selected choice
+            ]
+        )
 
     def show_welcome(self):
         """Display welcome message."""
@@ -90,14 +78,10 @@ class TwitterDownloaderCLI:
             )
         )
 
-    def initialize_downloader(self) -> bool:
-        """Initialize the downloader with credentials."""
-        try:
+    def initialize_downloader(self) -> None:
+        """Initialize the downloader."""
+        if not self.downloader:
             self.downloader = TwitterDownloader()
-            return True
-        except ValueError as e:
-            console.print(f"⚠️  {str(e)}", style="yellow")
-            return False
 
     def main_menu(self) -> None:
         """Display and handle main menu."""
@@ -106,26 +90,20 @@ class TwitterDownloaderCLI:
                 "What would you like to do?",
                 choices=[
                     "Download a video",
-                    "Configure settings",
                     "Show information",
                     "Exit",
                 ],
                 use_indicator=True,
                 instruction="(Use ↑/↓ arrows and Enter to select, Esc to exit)",
-                qmark="🔹"
+                qmark="🔹",
             ).ask()
 
-            if choice is None:  # User pressed Esc
-                console.print("👋 Goodbye!", style="yellow")
-                sys.exit(0)
-
-            if choice == "Exit":
+            if choice is None or choice == "Exit":  # User pressed Esc or chose Exit
                 console.print("👋 Goodbye!", style="yellow")
                 sys.exit(0)
 
             actions = {
                 "Download a video": self.download_workflow,
-                "Configure settings": self.config_workflow,
                 "Show information": self.show_info,
             }
 
@@ -135,18 +113,7 @@ class TwitterDownloaderCLI:
     @handle_errors
     def download_workflow(self) -> None:
         """Handle the video download workflow."""
-        if not self.initialize_downloader():
-            setup_choice = questionary.select(
-                "Would you like to configure your settings now?",
-                choices=["Yes", "No", "⟵ Back"],
-                instruction="(Use ↑/↓ and Enter)",
-                qmark="🔹"
-            ).ask()
-            if setup_choice in (None, "⟵ Back"):
-                return
-            if setup_choice == "Yes":
-                self.config_workflow()
-            return
+        self.initialize_downloader()
 
         # Get tweet URL
         url = self._get_tweet_url()
@@ -159,21 +126,27 @@ class TwitterDownloaderCLI:
             choices=["best", "medium", "low", "⟵ Back"],
             default="best",
             instruction="(Use ↑/↓ arrows and Enter to select, Esc to go back)",
-            qmark="🔹"
+            qmark="🔹",
         ).ask()
 
         if quality is None or quality == "⟵ Back":  # User pressed Esc or Back
             return
 
         # Ask for custom path or use default Downloads directory
+        prompt_text = (
+            "Do you want to specify a custom save location? "
+            "(Default: Downloads folder)"
+        )
         use_custom_path_choice = questionary.select(
-            "Do you want to specify a custom save location? (Default: Downloads folder)",
+            prompt_text,
             choices=["Yes", "No", "⟵ Back"],
             instruction="(Use ↑/↓ and Enter)",
-            qmark="🔹"
+            qmark="🔹",
         ).ask()
 
-        if use_custom_path_choice is None or use_custom_path_choice == "⟵ Back":  # User pressed Esc or Back
+        if (
+            use_custom_path_choice is None or use_custom_path_choice == "⟵ Back"
+        ):  # User pressed Esc or Back
             return
 
         output = None
@@ -181,7 +154,7 @@ class TwitterDownloaderCLI:
             output = questionary.path(
                 "Enter the output path (type 'back' to return):",
                 default=str(self.downloader._get_downloads_dir()),
-                qmark="🔹"
+                qmark="🔹",
             ).ask()
 
             if output is None:  # User pressed Esc
@@ -211,81 +184,12 @@ class TwitterDownloaderCLI:
                     ("https://twitter.com/", "https://x.com/")
                 ),
                 instruction="(Press Esc or type 'back' to go back)",
-                qmark="🔹"
+                qmark="🔹",
             ).ask()
 
             if url is None:  # User pressed Esc
                 return None
             return url
-
-    def config_workflow(self) -> None:
-        """Handle configuration workflow."""
-        while True:
-            choice = questionary.select(
-                "Configuration options:",
-                choices=[
-                    "Set up bearer token",
-                    "Show current configuration",
-                    "Back to main menu",
-                ],
-                instruction="(Use ↑/↓ arrows and Enter to select, Esc to go back)",
-                qmark="🔹"
-            ).ask()
-
-            if choice is None or choice == "Back to main menu":  # User pressed Esc or chose back
-                break
-            elif choice == "Set up bearer token":
-                self._setup_bearer_token()
-            else:
-                self._show_current_config()
-
-    def _setup_bearer_token(self) -> None:
-        """Set up bearer token configuration."""
-        console.print("\n📝 Twitter API Configuration", style="blue bold")
-        console.print(
-            "You can get your bearer token from https://developer.twitter.com"
-        )
-
-        if Path(".env").exists():
-            overwrite_choice = questionary.select(
-                "Configuration file exists. Overwrite?",
-                choices=["Yes", "No", "⟵ Back"],
-                instruction="(Use ↑/↓ and Enter)",
-                qmark="🔹"
-            ).ask()
-            if overwrite_choice in (None, "No", "⟵ Back"):
-                return
-
-        token = questionary.password(
-            "Enter your Twitter Bearer Token (type 'back' to cancel):",
-            instruction="(Press Esc or type 'back' to cancel)",
-            qmark="🔹"
-        ).ask()
-
-        if token is None:  # User pressed Esc
-            return
-        if isinstance(token, str) and token.lower() == "back":
-            return
-
-        with open(".env", "w") as f:
-            f.write(f"BEARER_TOKEN={token}")
-
-        console.print("✅ Configuration saved successfully!", style="green")
-
-    def _show_current_config(self) -> None:
-        """Display current configuration."""
-        token = os.getenv("BEARER_TOKEN")
-        if token:
-            masked_token = f"{token[:8]}...{token[-4:]}"
-            console.print(
-                Panel.fit(
-                    f"Bearer Token: {masked_token}",
-                    title="📌 Current Configuration",
-                    border_style="blue",
-                )
-            )
-        else:
-            console.print("⚠️  No configuration found!", style="yellow")
 
     def _show_next_steps(self) -> None:
         """Show available next steps."""
@@ -308,19 +212,55 @@ class TwitterDownloaderCLI:
                 "• Use ↑/↓ arrows to move\n"
                 "• Press Enter to select\n"
                 "• Press Esc or type 'back' to go back\n\n"
-                "For more information, visit: https://github.com/yourusername/twitter-video-dl",
+                "For more information, visit: "
+                "https://github.com/reneboygarcia/twitter_video",
                 title="ℹ️ About Twitter Video Downloader",
                 border_style="blue",
             )
         )
 
 
-def main():
-    """Entry point for the CLI application."""
+@click.command()
+@click.argument("url", required=False)
+@click.option(
+    "--quality",
+    "-q",
+    type=click.Choice(["best", "medium", "low"]),
+    help="Video quality settings (default: best)",
+)
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(writable=True),
+    help="Output directory or filename path",
+)
+def main(
+    url: Optional[str] = None,
+    quality: Optional[str] = None,
+    output: Optional[str] = None,
+):
+    """An interactive and command-line tool to download videos from Twitter/X."""
     try:
         cli = TwitterDownloaderCLI()
-        cli.show_welcome()
-        cli.main_menu()
+
+        # If url is specified, perform direct download (non-interactive)
+        if url:
+            cli.initialize_downloader()
+            q = quality or "best"
+            try:
+                print(f"Downloading video from: {url}")
+                output_path = cli.downloader.download_video(url, output, q)
+                console.print(
+                    f"\n✅ Video downloaded successfully to: {output_path}",
+                    style="green",
+                )
+            except Exception as e:
+                console.print(f"\n❌ Download failed: {str(e)}", style="red")
+                sys.exit(1)
+        else:
+            # Fall back to interactive mode
+            cli.show_welcome()
+            cli.main_menu()
     except KeyboardInterrupt:
         console.print("\n👋 Operation cancelled by user", style="yellow")
         sys.exit(0)

@@ -1,10 +1,13 @@
-import os
-import yt_dlp
-from typing import Optional, Dict, Any
-from pathlib import Path
-from tqdm import tqdm
 import logging
+import os
 import platform
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+import yt_dlp
+from tqdm import tqdm
+
+DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
 
 class TwitterDownloader:
@@ -15,24 +18,56 @@ class TwitterDownloader:
         self._setup_logging()
         self._setup_quality_settings()
 
+    def _get_log_file_path(self) -> Path:
+        """Get the platform-specific path for log files."""
+        home = Path.home()
+        sys_platform = platform.system()
+
+        if sys_platform == "Darwin":  # macOS
+            log_dir = home / "Library" / "Logs" / "twitdl"
+        elif sys_platform == "Windows":
+            local_appdata = os.getenv("LOCALAPPDATA")
+            log_dir = (
+                Path(local_appdata) / "twitdl"
+                if local_appdata
+                else home / "AppData" / "Local" / "twitdl"
+            )
+        else:  # Linux and other Unix-like OSes
+            log_dir = home / ".cache" / "twitdl"
+
+        return log_dir / "download.log"
+
     def _setup_logging(self):
         """Setup logging configuration."""
+        log_file = self._get_log_file_path()
+        try:
+            log_file.parent.mkdir(parents=True, exist_ok=True)
+            file_handler = logging.FileHandler(log_file)
+        except Exception:
+            # Fallback to local if we cannot write to the system log path
+            file_handler = logging.FileHandler("download.log")
+
         logging.basicConfig(
             level=logging.INFO,
             format="%(asctime)s - %(levelname)s - %(message)s",
-            handlers=[logging.StreamHandler(), logging.FileHandler("download.log")],
+            handlers=[logging.StreamHandler(), file_handler],
         )
         self.logger = logging.getLogger(__name__)
 
     def _setup_quality_settings(self):
         """Setup video quality settings."""
+        best_format = "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"
+        medium_format = (
+            "worstvideo[height>=480][ext=mp4]+worstaudio[ext=m4a]/"
+            "worst[height>=480][ext=mp4]"
+        )
         self.quality_settings = {
             "best": {
-                "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+                "format": best_format,
                 "merge_output_format": "mp4",
             },
             "medium": {
-                "format": "worstvideo[height>=480][ext=mp4]+worstaudio[ext=m4a]/worst[height>=480][ext=mp4]",
+                "format": medium_format,
                 "merge_output_format": "mp4",
             },
             "low": {
@@ -53,11 +88,15 @@ class TwitterDownloader:
     def _get_output_path(self, url: str, output: Optional[str] = None) -> Path:
         """Generate output path for the video."""
         downloads_dir = self._get_downloads_dir()
-        
+
         if output:
             custom_path = Path(output)
-            return custom_path if custom_path.is_absolute() else downloads_dir / custom_path
-        
+            return (
+                custom_path
+                if custom_path.is_absolute()
+                else downloads_dir / custom_path
+            )
+
         tweet_id = self._extract_tweet_id(url)
         return downloads_dir / f"twitter_video_{tweet_id}.mp4"
 
@@ -76,7 +115,10 @@ class TwitterDownloader:
                             unit="B",
                             unit_scale=True,
                             desc="Downloading",
-                            bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
+                            bar_format=(
+                                "{desc}: {percentage:3.0f}%|{bar}| "
+                                "{n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
+                            ),
                         )
                     except Exception as e:
                         self.logger.error(f"Progress bar error: {e}")
@@ -99,14 +141,20 @@ class TwitterDownloader:
 
     def _extract_tweet_id(self, url: str) -> str:
         """Extract tweet ID from URL."""
+        if not url:
+            raise ValueError("URL cannot be empty")
         try:
-            # Handle both twitter.com and x.com URLs
             parts = url.split("/")
-            return parts[-1].split("?")[0]
-        except IndexError:
-            raise ValueError("Invalid URL format. Could not extract tweet ID.")
+            tweet_id = parts[-1].split("?")[0]
+            if not tweet_id or not tweet_id.isdigit():
+                raise ValueError("Could not extract a valid numeric tweet ID.")
+            return tweet_id
+        except (IndexError, ValueError) as e:
+            raise ValueError(f"Invalid URL format: {str(e)}")
 
-    def download_video(self, url: str, output: Optional[str] = None, quality: str = "best") -> str:
+    def download_video(
+        self, url: str, output: Optional[str] = None, quality: str = "best"
+    ) -> str:
         """Download video from Twitter URL."""
         output_path = self._get_output_path(url, output)
         self.logger.info(f"Starting download process for: {url}")
@@ -122,9 +170,7 @@ class TwitterDownloader:
             "outtmpl": str(output_path),
             "quiet": True,  # Changed to True to avoid duplicate progress bars
             "no_warnings": False,
-            "http_headers": {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            },
+            "http_headers": {"User-Agent": DEFAULT_USER_AGENT},
         }
 
         # Add progress hooks
@@ -168,9 +214,7 @@ class TwitterDownloader:
             "quiet": True,
             "no_warnings": True,
             "extract_flat": True,
-            "http_headers": {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            },
+            "http_headers": {"User-Agent": DEFAULT_USER_AGENT},
         }
 
         try:

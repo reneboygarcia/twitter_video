@@ -15,9 +15,10 @@
 * The project is a Python-based Twitter/X Video Downloader CLI tool.
 * Codebase is structured as an editable package with sources under the `src/` directory.
 * Entry point is the command line executable `twitdl`, which triggers `twitter_video_dl.cli:main`.
-* The CLI uses `questionary` for interactive prompts and `rich` for terminal UI formatting.
+* The CLI supports both an interactive guided mode (via `questionary`) and a direct non-interactive execution (via `click` arguments).
 * Backend video extraction and downloading are powered by `yt-dlp` in `downloader.py`.
 * Development dependencies include `black`, `isort`, `flake8`, `mypy`, `pytest`, and `coverage`.
-* A virtual environment named `venv` is expected at the root of the project.
+* A virtual environment named `venv` is used for local development setup.
 * A Makefile manages workflow actions: `dev-setup`, `clean`, `format`, `test`, and `install`.
-* Execution logs are written locally to `download.log`.
+* Execution logs are written to standard platform logs paths (e.g., `~/Library/Logs/twitdl/download.log` on macOS) with local fallbacks.
+* There is a pytest-based unit test suite in the `tests/` directory verifying CLI parsing and backend download configurations.
