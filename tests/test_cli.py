@@ -2,8 +2,12 @@ from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
 
-from twitter_video_dl.cli import (TwitterDownloaderCLI, handle_back_option,
-                                  handle_errors, main)
+from twitter_video_dl.cli import (
+    TwitterDownloaderCLI,
+    handle_back_option,
+    handle_errors,
+    main,
+)
 
 
 def test_cli_help():
@@ -289,9 +293,12 @@ def test_cli_download_workflow_paths(
 
 
 def test_main_cli_keyboard_interrupt():
-    with patch(
-        "twitter_video_dl.cli.TwitterDownloaderCLI", side_effect=KeyboardInterrupt
-    ), patch("twitter_video_dl.cli.console.print") as mock_print:
+    with (
+        patch(
+            "twitter_video_dl.cli.TwitterDownloaderCLI", side_effect=KeyboardInterrupt
+        ),
+        patch("twitter_video_dl.cli.console.print") as mock_print,
+    ):
         from click.testing import CliRunner
 
         from twitter_video_dl.cli import main

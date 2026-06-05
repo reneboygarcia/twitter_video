@@ -93,16 +93,18 @@ def test_get_log_file_path_platforms():
         assert "Library/Logs/twitdl" in log_file.as_posix()
 
     # Test Windows
-    with patch("platform.system", return_value="Windows"), patch(
-        "os.getenv", return_value="/custom/appdata"
+    with (
+        patch("platform.system", return_value="Windows"),
+        patch("os.getenv", return_value="/custom/appdata"),
     ):
         downloader = TwitterDownloader()
         log_file = downloader._get_log_file_path()
         assert "/custom/appdata/twitdl" in log_file.as_posix()
 
     # Test Windows fallback when LOCALAPPDATA environment variable is empty
-    with patch("platform.system", return_value="Windows"), patch(
-        "os.getenv", return_value=None
+    with (
+        patch("platform.system", return_value="Windows"),
+        patch("os.getenv", return_value=None),
     ):
         downloader = TwitterDownloader()
         log_file = downloader._get_log_file_path()
@@ -304,9 +306,10 @@ def test_download_video_keyboard_interrupt(mock_ytdl_class):
     mock_ytdl_class.return_value.__enter__.return_value = mock_ytdl
     mock_ytdl.download.side_effect = KeyboardInterrupt()
 
-    with patch("pathlib.Path.exists") as mock_exists, patch(
-        "pathlib.Path.unlink"
-    ) as mock_unlink:
+    with (
+        patch("pathlib.Path.exists") as mock_exists,
+        patch("pathlib.Path.unlink") as mock_unlink,
+    ):
 
         mock_exists.return_value = True
 

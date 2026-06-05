@@ -53,9 +53,10 @@ clean:
 
 format:
 	@echo "🎨 Formatting code..."
-	$(VENV_BIN)/black $(SRC_DIR)
-	$(VENV_BIN)/isort $(SRC_DIR)
+	$(VENV_BIN)/black $(SRC_DIR) tests
+	$(VENV_BIN)/isort $(SRC_DIR) tests
 	@echo "✅ Code formatted!"
+
 
 test:
 	@echo "🧪 Running tests..."

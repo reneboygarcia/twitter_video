@@ -6,13 +6,13 @@ from typing import Any, Dict, Optional
 
 import yt_dlp
 from rich.progress import (
-    Progress,
     BarColumn,
+    DownloadColumn,
+    Progress,
+    SpinnerColumn,
     TextColumn,
     TimeRemainingColumn,
     TransferSpeedColumn,
-    DownloadColumn,
-    SpinnerColumn,
 )
 
 DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
@@ -167,7 +167,7 @@ class TwitterDownloader:
                     local_progress.update(local_task, **update_kwargs)
 
             elif d["status"] == "finished":
-                if local_progress:
+                if local_progress and local_task is not None:
                     local_progress.update(local_task, description="Processing...")
                     if is_local:
                         try:
@@ -180,7 +180,7 @@ class TwitterDownloader:
                     print("\nProcessing video...")
 
             elif d["status"] == "error":
-                if local_progress:
+                if local_progress and local_task is not None:
                     local_progress.update(local_task, description="Error")
                     if is_local:
                         try:
@@ -304,18 +304,22 @@ class TwitterDownloader:
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
+                if not info:
+                    raise ValueError("Could not extract video info")
+
+                formats = info.get("formats") or []
                 return {
-                    "title": info.get("title", "Untitled"),
-                    "duration": info.get("duration", 0),
+                    "title": info.get("title") or "Untitled",
+                    "duration": info.get("duration") or 0,
                     "formats": [
                         {
-                            "format_id": f.get("format_id", ""),
-                            "ext": f.get("ext", ""),
-                            "filesize": f.get("filesize", 0),
-                            "height": f.get("height", 0),
+                            "format_id": f.get("format_id") or "",
+                            "ext": f.get("ext") or "",
+                            "filesize": f.get("filesize") or 0,
+                            "height": f.get("height") or 0,
                         }
-                        for f in info.get("formats", [])
-                        if f.get("ext") == "mp4"
+                        for f in formats
+                        if isinstance(f, dict) and f.get("ext") == "mp4"
                     ],
                 }
         except Exception as e:

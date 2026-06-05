@@ -59,7 +59,7 @@ class TwitterDownloaderCLI:
     """Interactive CLI for Twitter Video Downloader."""
 
     def __init__(self):
-        self.downloader = None
+        self.downloader: Optional[TwitterDownloader] = None
         # Configure questionary to use brand-aligned Twitter/X colors
         self.style = questionary.Style(
             [
@@ -79,8 +79,8 @@ class TwitterDownloaderCLI:
         ascii_art = (
             " ______  __     __   __   ______  _____    __\n"
             "/\\__  _\\/\\ \\  _ \\ \\ /\\ \\ /\\__  _\\/\\  __-. /\\ \\\n"
-            "\\/_/\\ \\/\\ \\ \\/ \".\\ \\\\ \\ \\\\/_/\\ \\/\\ \\ \\/\\ \\\\ \\ \\____\n"  # noqa: E501
-            "   \\ \\_\\ \\ \\__/\".~\\_\\\\ \\_\\  \\ \\_\\ \\ \\____- \\ \\_____\\\n"
+            '\\/_/\\ \\/\\ \\ \\/ ".\\ \\\\ \\ \\\\/_/\\ \\/\\ \\ \\/\\ \\\\ \\ \\____\n'  # noqa: E501
+            '   \\ \\_\\ \\ \\__/".~\\_\\\\ \\_\\  \\ \\_\\ \\ \\____- \\ \\_____\\\n'
             "    \\/_/  \\/_/   \\/_/ \\/_/   \\/_/  \\/____/  \\/_____/"
         )
         console.print()
@@ -89,8 +89,7 @@ class TwitterDownloaderCLI:
             "[bold #ffffff]𝕏 Video Downloader[/bold #ffffff] [dim]v0.1.0[/dim]"
         )
         console.print(
-            "[#6e767d]A simple, elegant CLI tool to download media"
-            " from Twitter/X[/#6e767d]"
+            "[#6e767d]A simple CLI tool to download media" " from Twitter/X[/#6e767d]"
         )
         console.print()
 
@@ -139,6 +138,7 @@ class TwitterDownloaderCLI:
         """Handle the video download workflow."""
         try:
             self.initialize_downloader()
+            assert self.downloader is not None
 
             # Get tweet URL
             url = self._get_tweet_url()
@@ -152,9 +152,7 @@ class TwitterDownloaderCLI:
                     questionary.Choice(
                         "Best (highest resolution / quality)", value="best"
                     ),
-                    questionary.Choice(
-                        "Medium (balanced quality)", value="medium"
-                    ),
+                    questionary.Choice("Medium (balanced quality)", value="medium"),
                     questionary.Choice(
                         "Low (lowest resolution / smaller size)", value="low"
                     ),
@@ -186,8 +184,7 @@ class TwitterDownloaderCLI:
             ).ask()
 
             if (
-                use_custom_path_choice is None
-                or use_custom_path_choice == "⟵ Back"
+                use_custom_path_choice is None or use_custom_path_choice == "⟵ Back"
             ):  # Esc or Back
                 return
 
@@ -206,9 +203,7 @@ class TwitterDownloaderCLI:
                     return
 
             try:
-                console.print(
-                    "\n[bold #ffffff]𝕏 Video Downloader[/bold #ffffff]"
-                )
+                console.print("\n[bold #ffffff]𝕏 Video Downloader[/bold #ffffff]")
                 console.print(
                     f"[#6e767d]Initiating stream download for:[/#6e767d] {url}\n"
                 )
@@ -249,8 +244,7 @@ class TwitterDownloaderCLI:
         console.print()
         console.print("[bold #ffffff]ℹ️ About 𝕏 Video Downloader[/bold #ffffff]")
         console.print(
-            "A minimal, elegant command-line tool to download videos"
-            " from Twitter/X."
+            "A minimal, elegant command-line tool to download videos" " from Twitter/X."
         )
         console.print()
         console.print("[bold]Features:[/bold]")
@@ -300,6 +294,7 @@ def main(
         # If url is specified and guide is not requested, perform direct download
         if url and not guide:
             cli.initialize_downloader()
+            assert cli.downloader is not None
             q = quality or "best"
             try:
                 console.print(
