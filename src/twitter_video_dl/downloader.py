@@ -39,20 +39,26 @@ class TwitterDownloader:
 
     def _setup_logging(self):
         """Setup logging configuration."""
-        log_file = self._get_log_file_path()
-        try:
-            log_file.parent.mkdir(parents=True, exist_ok=True)
-            file_handler = logging.FileHandler(log_file)
-        except Exception:
-            # Fallback to local if we cannot write to the system log path
-            file_handler = logging.FileHandler("download.log")
+        self.logger = logging.getLogger("twitter_video_dl")
+        self.logger.setLevel(logging.INFO)
 
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s - %(levelname)s - %(message)s",
-            handlers=[logging.StreamHandler(), file_handler],
-        )
-        self.logger = logging.getLogger(__name__)
+        # Avoid adding duplicate handlers if they are already registered
+        if not self.logger.handlers:
+            log_file = self._get_log_file_path()
+            try:
+                log_file.parent.mkdir(parents=True, exist_ok=True)
+                file_handler = logging.FileHandler(log_file)
+            except Exception:
+                file_handler = logging.FileHandler("download.log")
+
+            formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+            file_handler.setFormatter(formatter)
+
+            stream_handler = logging.StreamHandler()
+            stream_handler.setFormatter(formatter)
+
+            self.logger.addHandler(file_handler)
+            self.logger.addHandler(stream_handler)
 
     def _setup_quality_settings(self):
         """Setup video quality settings."""
@@ -178,12 +184,7 @@ class TwitterDownloader:
 
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                print("Fetching video information...")
-                video_info = ydl.extract_info(url, download=False)
-
-                if not video_info:
-                    raise ValueError("No video found in tweet")
-
+                print("Downloading video stream...")
                 ydl.download([url])
 
                 if not output_path.exists():
