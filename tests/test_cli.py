@@ -18,15 +18,11 @@ def test_cli_help():
 def test_cli_direct_download_success(mock_downloader_class):
     mock_downloader = MagicMock()
     mock_downloader_class.return_value = mock_downloader
-    mock_downloader.download_video.return_value = (
-        "/path/to/downloaded_video.mp4"
-    )
+    mock_downloader.download_video.return_value = "/path/to/downloaded_video.mp4"
 
     runner = CliRunner()
     url = "https://x.com/NASA/status/123456"
-    result = runner.invoke(
-        main, [url, "-q", "medium", "-o", "custom_path.mp4"]
-    )
+    result = runner.invoke(main, [url, "-q", "medium", "-o", "custom_path.mp4"])
 
     assert result.exit_code == 0
     assert "Downloading video from:" in result.output
@@ -43,9 +39,7 @@ def test_cli_direct_download_success(mock_downloader_class):
 def test_cli_direct_download_failure(mock_downloader_class):
     mock_downloader = MagicMock()
     mock_downloader_class.return_value = mock_downloader
-    mock_downloader.download_video.side_effect = ValueError(
-        "Mocked download error"
-    )
+    mock_downloader.download_video.side_effect = ValueError("Mocked download error")
 
     runner = CliRunner()
     url = "https://x.com/NASA/status/123456"

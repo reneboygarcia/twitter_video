@@ -70,3 +70,10 @@ def test_download_video_success(mock_ytdl_class):
 
     mock_ytdl_class.assert_called_once()
     mock_ytdl.download.assert_called_once_with([url])
+
+
+def test_download_video_invalid_domain():
+    downloader = TwitterDownloader()
+    url = "https://youtube.com/watch?v=dQw4w9WgXcQ"
+    with pytest.raises(ValueError, match="Only Twitter/X URLs are supported"):
+        downloader.download_video(url)

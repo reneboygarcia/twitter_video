@@ -162,6 +162,9 @@ class TwitterDownloader:
         self, url: str, output: Optional[str] = None, quality: str = "best"
     ) -> str:
         """Download video from Twitter URL."""
+        if not url.startswith(("https://twitter.com/", "https://x.com/")):
+            raise ValueError("Only Twitter/X URLs are supported.")
+
         output_path = self._get_output_path(url, output)
         self.logger.info(f"Starting download process for: {url}")
         self.logger.info(f"Quality setting: {quality}")
