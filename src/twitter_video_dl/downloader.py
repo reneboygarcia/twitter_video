@@ -199,6 +199,21 @@ class TwitterDownloader:
             error_msg = f"Download failed: {str(e)}"
             self.logger.error(error_msg)
             raise ValueError(error_msg)
+        except KeyboardInterrupt:
+            self.logger.warning("Download process interrupted by user.")
+            if output_path.exists():
+                try:
+                    output_path.unlink()
+                except Exception:
+                    pass
+            # Also clean up any potential .part file
+            part_path = output_path.with_suffix(output_path.suffix + ".part")
+            if part_path.exists():
+                try:
+                    part_path.unlink()
+                except Exception:
+                    pass
+            raise
         except Exception as e:
             error_msg = f"Unexpected error: {str(e)}"
             self.logger.error(error_msg)

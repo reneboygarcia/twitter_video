@@ -86,93 +86,100 @@ class TwitterDownloaderCLI:
     def main_menu(self) -> None:
         """Display and handle main menu."""
         while True:
-            choice = questionary.select(
-                "What would you like to do?",
-                choices=[
-                    "Download a video",
-                    "Show information",
-                    "Exit",
-                ],
-                use_indicator=True,
-                instruction="(Use ↑/↓ arrows and Enter to select, Esc to exit)",
-                qmark="🔹",
-            ).ask()
+            try:
+                choice = questionary.select(
+                    "What would you like to do?",
+                    choices=[
+                        "Download a video",
+                        "Show information",
+                        "Exit",
+                    ],
+                    use_indicator=True,
+                    instruction="(Use ↑/↓ arrows and Enter to select, Esc to exit)",
+                    qmark="🔹",
+                ).ask()
 
-            if choice is None or choice == "Exit":  # User pressed Esc or chose Exit
-                console.print("👋 Goodbye!", style="yellow")
+                if choice is None or choice == "Exit":  # User pressed Esc or chose Exit
+                    console.print("👋 Goodbye!", style="yellow")
+                    sys.exit(0)
+
+                actions = {
+                    "Download a video": self.download_workflow,
+                    "Show information": self.show_info,
+                }
+
+                if action := actions.get(choice):
+                    action()
+            except KeyboardInterrupt:
+                console.print("\n👋 Goodbye!", style="yellow")
                 sys.exit(0)
-
-            actions = {
-                "Download a video": self.download_workflow,
-                "Show information": self.show_info,
-            }
-
-            if action := actions.get(choice):
-                action()
 
     @handle_errors
     def download_workflow(self) -> None:
         """Handle the video download workflow."""
-        self.initialize_downloader()
+        try:
+            self.initialize_downloader()
 
-        # Get tweet URL
-        url = self._get_tweet_url()
-        if url is None:  # User pressed Esc or chose back
-            return
+            # Get tweet URL
+            url = self._get_tweet_url()
+            if url is None:  # User pressed Esc or chose back
+                return
 
-        # Get video quality
-        quality = questionary.select(
-            "Select video quality:",
-            choices=["best", "medium", "low", "⟵ Back"],
-            default="best",
-            instruction="(Use ↑/↓ arrows and Enter to select, Esc to go back)",
-            qmark="🔹",
-        ).ask()
-
-        if quality is None or quality == "⟵ Back":  # User pressed Esc or Back
-            return
-
-        # Ask for custom path or use default Downloads directory
-        prompt_text = (
-            "Do you want to specify a custom save location? "
-            "(Default: Downloads folder)"
-        )
-        use_custom_path_choice = questionary.select(
-            prompt_text,
-            choices=["Yes", "No", "⟵ Back"],
-            instruction="(Use ↑/↓ and Enter)",
-            qmark="🔹",
-        ).ask()
-
-        if (
-            use_custom_path_choice is None or use_custom_path_choice == "⟵ Back"
-        ):  # User pressed Esc or Back
-            return
-
-        output = None
-        if use_custom_path_choice == "Yes":
-            output = questionary.path(
-                "Enter the output path (type 'back' to return):",
-                default=str(self.downloader._get_downloads_dir()),
+            # Get video quality
+            quality = questionary.select(
+                "Select video quality:",
+                choices=["best", "medium", "low", "⟵ Back"],
+                default="best",
+                instruction="(Use ↑/↓ arrows and Enter to select, Esc to go back)",
                 qmark="🔹",
             ).ask()
 
-            if output is None:  # User pressed Esc
-                return
-            if isinstance(output, str) and output.lower() == "back":
+            if quality is None or quality == "⟵ Back":  # User pressed Esc or Back
                 return
 
-        try:
-            print(f"\nDownloading video from: {url}")
-            output_path = self.downloader.download_video(url, output, quality)
-            console.print(
-                f"\n✅ Video downloaded successfully to: {output_path}", style="green"
+            # Ask for custom path or use default Downloads directory
+            prompt_text = (
+                "Do you want to specify a custom save location? "
+                "(Default: Downloads folder)"
             )
-        except Exception as e:
-            console.print(f"\n❌ Download failed: {str(e)}", style="red")
-            return
+            use_custom_path_choice = questionary.select(
+                prompt_text,
+                choices=["Yes", "No", "⟵ Back"],
+                instruction="(Use ↑/↓ and Enter)",
+                qmark="🔹",
+            ).ask()
 
-        self._show_next_steps()
+            if (
+                use_custom_path_choice is None or use_custom_path_choice == "⟵ Back"
+            ):  # User pressed Esc or Back
+                return
+
+            output = None
+            if use_custom_path_choice == "Yes":
+                output = questionary.path(
+                    "Enter the output path (type 'back' to return):",
+                    default=str(self.downloader._get_downloads_dir()),
+                    qmark="🔹",
+                ).ask()
+
+                if output is None:  # User pressed Esc
+                    return
+                if isinstance(output, str) and output.lower() == "back":
+                    return
+
+            try:
+                print(f"\nDownloading video from: {url}")
+                output_path = self.downloader.download_video(url, output, quality)
+                console.print(
+                    f"\n✅ Video downloaded successfully to: {output_path}",
+                    style="green",
+                )
+            except Exception as e:
+                console.print(f"\n❌ Download failed: {str(e)}", style="red")
+                return
+        except KeyboardInterrupt:
+            console.print("\n⚠️ Download cancelled", style="yellow")
+            return
 
     @handle_back_option
     def _get_tweet_url(self) -> Optional[str]:
@@ -180,9 +187,8 @@ class TwitterDownloaderCLI:
         while True:
             url = questionary.text(
                 "Enter the tweet URL (type 'back' to return):",
-                validate=lambda x: x.startswith(
-                    ("https://twitter.com/", "https://x.com/")
-                ),
+                validate=lambda x: x.lower() == "back"
+                or x.startswith(("https://twitter.com/", "https://x.com/")),
                 instruction="(Press Esc or type 'back' to go back)",
                 qmark="🔹",
             ).ask()
@@ -191,14 +197,6 @@ class TwitterDownloaderCLI:
                 return None
             return url
 
-    def _show_next_steps(self) -> None:
-        """Show available next steps."""
-        console.print("\n📌 What's next?", style="blue bold")
-        console.print("• Download another video")
-        console.print("• Change settings")
-        console.print("• Exit the program")
-        console.print("\nUse ↑/↓ arrows to navigate and Enter to select")
-
     def show_info(self) -> None:
         """Display information about the tool."""
         console.print(
@@ -206,8 +204,8 @@ class TwitterDownloaderCLI:
                 "A command-line tool to download videos from Twitter/X\n\n"
                 "Features:\n"
                 "• Download videos in different qualities\n"
-                "• Custom output filenames\n"
-                "• Easy configuration management\n\n"
+                "• Custom output filenames and directories\n"
+                "• Graceful handling of download cancels and errors\n\n"
                 "Navigation:\n"
                 "• Use ↑/↓ arrows to move\n"
                 "• Press Enter to select\n"
@@ -234,17 +232,24 @@ class TwitterDownloaderCLI:
     type=click.Path(writable=True),
     help="Output directory or filename path",
 )
+@click.option(
+    "--guide",
+    "-g",
+    is_flag=True,
+    help="Force interactive guided mode",
+)
 def main(
     url: Optional[str] = None,
     quality: Optional[str] = None,
     output: Optional[str] = None,
+    guide: bool = False,
 ):
     """An interactive and command-line tool to download videos from Twitter/X."""
     try:
         cli = TwitterDownloaderCLI()
 
-        # If url is specified, perform direct download (non-interactive)
-        if url:
+        # If url is specified and guide is not requested, perform direct download
+        if url and not guide:
             cli.initialize_downloader()
             q = quality or "best"
             try:

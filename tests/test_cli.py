@@ -47,3 +47,43 @@ def test_cli_direct_download_failure(mock_downloader_class):
 
     assert result.exit_code == 1
     assert "Download failed: Mocked download error" in result.output
+
+
+@patch("twitter_video_dl.cli.TwitterDownloaderCLI")
+def test_cli_guide_mode(mock_cli_class):
+    mock_cli = MagicMock()
+    mock_cli_class.return_value = mock_cli
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--guide"])
+
+    assert result.exit_code == 0
+    mock_cli.show_welcome.assert_called_once()
+    mock_cli.main_menu.assert_called_once()
+
+
+@patch("twitter_video_dl.cli.TwitterDownloaderCLI")
+def test_cli_interactive_fallback_without_url(mock_cli_class):
+    mock_cli = MagicMock()
+    mock_cli_class.return_value = mock_cli
+
+    runner = CliRunner()
+    result = runner.invoke(main, [])
+
+    assert result.exit_code == 0
+    mock_cli.show_welcome.assert_called_once()
+    mock_cli.main_menu.assert_called_once()
+
+
+@patch("twitter_video_dl.cli.TwitterDownloaderCLI")
+def test_cli_url_with_guide_mode(mock_cli_class):
+    mock_cli = MagicMock()
+    mock_cli_class.return_value = mock_cli
+
+    runner = CliRunner()
+    url = "https://x.com/NASA/status/123456"
+    result = runner.invoke(main, [url, "--guide"])
+
+    assert result.exit_code == 0
+    mock_cli.show_welcome.assert_called_once()
+    mock_cli.main_menu.assert_called_once()
