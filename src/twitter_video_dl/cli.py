@@ -155,8 +155,8 @@ class TwitterDownloaderCLI:
             use_custom_path_choice = questionary.select(
                 "Do you want to specify a custom save location? (Default: Downloads folder)",
                 choices=[
-                    questionary.Choice("Yes (specify custom directory/file)", value="Yes"),
                     questionary.Choice("No (save to Downloads)", value="No"),
+                    questionary.Choice("Yes (specify custom directory/file)", value="Yes"),
                     questionary.Choice("⟵ Back", value="⟵ Back"),
                 ],
                 style=self.style,
