@@ -36,8 +36,8 @@ def handle_errors(func: Callable) -> Callable:
             return func(*args, **kwargs)
         except Exception as e:
             error_message = (
-                f"[bold red]Error:[/bold red] {str(e)}\n\n"
-                "[bold yellow]Tips:[/bold yellow]\n"
+                f"[bold #f4212e]Error:[/bold #f4212e] {str(e)}\n\n"
+                "[bold #f5b800]Tips:[/bold #f5b800]\n"
                 "• Check your internet connection\n"
                 "• Verify the tweet URL is correct, public, and contains a video"
             )
@@ -46,7 +46,7 @@ def handle_errors(func: Callable) -> Callable:
                     error_message,
                     title="⚠️ Something Went Wrong",
                     title_align="left",
-                    border_style="red",
+                    border_style="#f4212e",
                     expand=False,
                 )
             )
@@ -60,16 +60,16 @@ class TwitterDownloaderCLI:
 
     def __init__(self):
         self.downloader = None
-        # Configure questionary to use Claude-inspired developer accents
+        # Configure questionary to use brand-aligned Twitter/X colors
         self.style = questionary.Style(
             [
-                ("qmark", "fg:#00afaf bold"),        # Cyan question marks
+                ("qmark", "fg:#1d9bf0 bold"),        # Twitter Blue question marks
                 ("question", "bold"),                 # Standard bold question
-                ("answer", "fg:#00afaf bold"),        # Cyan answer
-                ("pointer", "fg:#00afaf bold"),       # Cyan pointer
-                ("highlighted", "fg:#00afaf bold"),   # Cyan highlighted choice
-                ("selected", "fg:#00afaf"),           # Cyan selected choice
-                ("instruction", "fg:#8a8a8a italic"), # Muted gray instruction tips
+                ("answer", "fg:#1d9bf0 bold"),        # Twitter Blue answer
+                ("pointer", "fg:#1d9bf0 bold"),       # Twitter Blue pointer
+                ("highlighted", "fg:#1d9bf0 bold"),   # Twitter Blue highlighted choice
+                ("selected", "fg:#1d9bf0"),           # Twitter Blue selected choice
+                ("instruction", "fg:#6e767d italic"), # Muted Twitter Gray instruction tips
             ]
         )
 
@@ -81,9 +81,9 @@ class TwitterDownloaderCLI:
    \ \_\ \ \__/".~\_\\ \_\  \ \_\ \ \____- \ \_____\ 
     \/_/  \/_/   \/_/ \/_/   \/_/  \/____/  \/_____/ """
         console.print()
-        console.print(f"[bold cyan]{ascii_art}[/bold cyan]")
-        console.print("[bold cyan]🐦 Twitter Video Downloader[/bold cyan] [dim]v0.1.0[/dim]")
-        console.print("[dim]A simple, elegant CLI tool to download media from Twitter/X[/dim]")
+        console.print(f"[bold #1d9bf0]{ascii_art}[/bold #1d9bf0]")
+        console.print("[bold #1d9bf0]🐦 Twitter Video Downloader[/bold #1d9bf0] [dim]v0.1.0[/dim]")
+        console.print("[#6e767d]A simple, elegant CLI tool to download media from Twitter/X[/#6e767d]")
         console.print()
 
     def initialize_downloader(self) -> None:
@@ -184,19 +184,19 @@ class TwitterDownloaderCLI:
                     return
 
             try:
-                console.print(f"\n[bold cyan]🐦 Twitter Video Downloader[/bold cyan]")
-                console.print(f"[dim]Initiating stream download for:[/dim] {url}\n")
+                console.print(f"\n[bold #1d9bf0]🐦 Twitter Video Downloader[/bold #1d9bf0]")
+                console.print(f"[#6e767d]Initiating stream download for:[/#6e767d] {url}\n")
                 start_time = time.time()
                 output_path = self.downloader.download_video(url, output, quality)
                 duration = time.time() - start_time
                 console.print(
-                    f"\n[bold green]✔[/bold green] Video successfully downloaded to: [bold]{output_path}[/bold] (took {duration:.2f} seconds)\n",
+                    f"\n[bold #00ba7c]✔[/bold #00ba7c] Video successfully downloaded to: [bold]{output_path}[/bold] (took {duration:.2f} seconds)\n",
                 )
             except Exception as e:
-                console.print(f"\n❌ {str(e)}", style="red")
+                console.print(f"\n[bold #f4212e]❌[/bold #f4212e] {str(e)}")
                 return
         except KeyboardInterrupt:
-            console.print("\n⚠️ Download cancelled", style="yellow")
+            console.print("\n[bold #f5b800]⚠️[/bold #f5b800] Download cancelled")
             return
 
     @handle_back_option
@@ -219,7 +219,7 @@ class TwitterDownloaderCLI:
     def show_info(self) -> None:
         """Display information about the tool."""
         console.print()
-        console.print("[bold cyan]ℹ️ About Twitter Video Downloader[/bold cyan]")
+        console.print("[bold #1d9bf0]ℹ️ About Twitter Video Downloader[/bold #1d9bf0]")
         console.print("A minimal, elegant command-line tool to download videos from Twitter/X.")
         console.print()
         console.print("[bold]Features:[/bold]")
@@ -269,23 +269,23 @@ def main(
             cli.initialize_downloader()
             q = quality or "best"
             try:
-                console.print(f"[bold cyan]🐦 Twitter Video Downloader[/bold cyan] [dim]v0.1.0[/dim]")
-                console.print(f"[dim]Direct download requested for:[/dim] {url}\n")
+                console.print(f"[bold #1d9bf0]🐦 Twitter Video Downloader[/bold #1d9bf0] [dim]v0.1.0[/dim]")
+                console.print(f"[#6e767d]Direct download requested for:[/#6e767d] {url}\n")
                 start_time = time.time()
                 output_path = cli.downloader.download_video(url, output, q)
                 duration = time.time() - start_time
                 console.print(
-                    f"\n[bold green]✔[/bold green] Video successfully downloaded to: [bold]{output_path}[/bold] (took {duration:.2f} seconds)\n",
+                    f"\n[bold #00ba7c]✔[/bold #00ba7c] Video successfully downloaded to: [bold]{output_path}[/bold] (took {duration:.2f} seconds)\n",
                 )
             except Exception as e:
-                console.print(f"\n❌ {str(e)}", style="red")
+                console.print(f"\n[bold #f4212e]❌[/bold #f4212e] {str(e)}")
                 sys.exit(1)
         else:
             # Fall back to interactive mode
             cli.show_welcome()
             cli.main_menu()
     except KeyboardInterrupt:
-        console.print("\n👋 Operation cancelled by user", style="yellow")
+        console.print("\n[bold #f5b800]👋[/bold #f5b800] Operation cancelled by user")
         sys.exit(0)
 
 

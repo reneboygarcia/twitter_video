@@ -135,8 +135,8 @@ class TwitterDownloader:
                         total = d.get("total_bytes") or d.get("total_bytes_estimate", 0)
                         local_progress = Progress(
                             SpinnerColumn(spinner_name="dots"),
-                            TextColumn("[bold cyan]{task.description:<26}"),
-                            BarColumn(bar_width=30, complete_style="cyan", finished_style="green"),
+                            TextColumn("[bold #1d9bf0]{task.description:<26}"),
+                            BarColumn(bar_width=30, complete_style="#1d9bf0", finished_style="#00ba7c"),
                             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
                             TextColumn("•"),
                             DownloadColumn(),
@@ -227,8 +227,8 @@ class TwitterDownloader:
 
         progress = Progress(
             SpinnerColumn(spinner_name="dots"),
-            TextColumn("[bold cyan]{task.description:<26}"),
-            BarColumn(bar_width=30, complete_style="cyan", finished_style="green"),
+            TextColumn("[bold #1d9bf0]{task.description:<26}"),
+            BarColumn(bar_width=30, complete_style="#1d9bf0", finished_style="#00ba7c"),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
             TextColumn("•"),
             DownloadColumn(),
