@@ -96,12 +96,16 @@ class TwitterDownloader:
     def _get_output_path(self, url: str, output: Optional[str] = None) -> Path:
         """Generate output path for the video."""
         downloads_dir = self._get_downloads_dir()
+        tweet_id = self._extract_tweet_id(url)
 
         if output:
             custom_path = Path(output)
-            if custom_path.is_dir() or output.endswith(("/", "\\")):
+            if (
+                custom_path == downloads_dir
+                or custom_path.is_dir()
+                or output.endswith(("/", "\\"))
+            ):
                 custom_path.mkdir(parents=True, exist_ok=True)
-                tweet_id = self._extract_tweet_id(url)
                 return custom_path / f"twitter_video_{tweet_id}.mp4"
 
             resolved_path = (
@@ -111,12 +115,10 @@ class TwitterDownloader:
             )
 
             if resolved_path.is_dir():
-                tweet_id = self._extract_tweet_id(url)
                 return resolved_path / f"twitter_video_{tweet_id}.mp4"
 
             return resolved_path
 
-        tweet_id = self._extract_tweet_id(url)
         return downloads_dir / f"twitter_video_{tweet_id}.mp4"
 
     def _create_progress_hook(
