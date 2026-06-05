@@ -24,7 +24,6 @@ setup(
         "requests>=2.31.0", 
         "python-dotenv>=1.0.0",
         "yt-dlp>=2026.02.21",  # Using >= instead of == for more flexibility
-        "tqdm>=4.66.4",       # Using >= instead of == for more flexibility
         "questionary>=1.10.0",
         "rich>=13.3.0",
     ],

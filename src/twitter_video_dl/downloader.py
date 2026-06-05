@@ -5,7 +5,15 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import yt_dlp
-from tqdm import tqdm
+from rich.progress import (
+    Progress,
+    BarColumn,
+    TextColumn,
+    TimeRemainingColumn,
+    TransferSpeedColumn,
+    DownloadColumn,
+    SpinnerColumn,
+)
 
 DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
@@ -54,11 +62,7 @@ class TwitterDownloader:
             formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
             file_handler.setFormatter(formatter)
 
-            stream_handler = logging.StreamHandler()
-            stream_handler.setFormatter(formatter)
-
             self.logger.addHandler(file_handler)
-            self.logger.addHandler(stream_handler)
 
     def _setup_quality_settings(self):
         """Setup video quality settings."""
@@ -117,42 +121,67 @@ class TwitterDownloader:
         tweet_id = self._extract_tweet_id(url)
         return downloads_dir / f"twitter_video_{tweet_id}.mp4"
 
-    def _create_progress_hook(self) -> Dict[str, Any]:
+    def _create_progress_hook(self, progress: Optional[Progress] = None, task: Optional[Any] = None) -> Dict[str, Any]:
         """Create a progress hook for download tracking."""
-        pbar = None
+        local_progress = progress
+        local_task = task
+        is_local = progress is None
 
         def progress_hook(d):
-            nonlocal pbar
+            nonlocal local_progress, local_task
             if d["status"] == "downloading":
-                if pbar is None:
+                if local_progress is None:
                     try:
                         total = d.get("total_bytes") or d.get("total_bytes_estimate", 0)
-                        pbar = tqdm(
-                            total=total,
-                            unit="B",
-                            unit_scale=True,
-                            desc="Downloading",
-                            bar_format=(
-                                "{desc}: {percentage:3.0f}%|{bar}| "
-                                "{n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
-                            ),
+                        local_progress = Progress(
+                            SpinnerColumn(spinner_name="dots"),
+                            TextColumn("[bold cyan]{task.description:<26}"),
+                            BarColumn(bar_width=30, complete_style="cyan", finished_style="green"),
+                            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                            TextColumn("•"),
+                            DownloadColumn(),
+                            TextColumn("•"),
+                            TransferSpeedColumn(),
+                            TextColumn("•"),
+                            TimeRemainingColumn(),
                         )
+                        local_progress.start()
+                        local_task = local_progress.add_task("Downloading", total=total)
                     except Exception as e:
                         self.logger.error(f"Progress bar error: {e}")
 
-                if pbar:
-                    update = d.get("downloaded_bytes", 0) - pbar.n
-                    if update > 0:
-                        pbar.update(update)
+                if local_progress and local_task is not None:
+                    update_kwargs = {"description": "Downloading", "completed": d.get("downloaded_bytes", 0)}
+                    total = d.get("total_bytes") or d.get("total_bytes_estimate")
+                    if total is not None:
+                        update_kwargs["total"] = total
+                    local_progress.update(local_task, **update_kwargs)
 
-            elif d["status"] == "finished" and pbar:
-                pbar.close()
-                print("\nProcessing video...")
+            elif d["status"] == "finished":
+                if local_progress:
+                    local_progress.update(local_task, description="Processing...")
+                    if is_local:
+                        try:
+                            local_progress.stop()
+                        except Exception:
+                            pass
+                        local_progress = None
+                        local_task = None
+                else:
+                    print("\nProcessing video...")
 
             elif d["status"] == "error":
-                if pbar:
-                    pbar.close()
-                print(f"\nError: {d.get('error')}")
+                if local_progress:
+                    local_progress.update(local_task, description="Error")
+                    if is_local:
+                        try:
+                            local_progress.stop()
+                        except Exception:
+                            pass
+                        local_progress = None
+                        local_task = None
+                else:
+                    print(f"\nError: {d.get('error')}")
 
         return {"progress_hooks": [progress_hook]}
 
@@ -196,13 +225,26 @@ class TwitterDownloader:
             "retries": 3,
         }
 
-        # Add progress hooks
-        ydl_opts.update(self._create_progress_hook())
+        progress = Progress(
+            SpinnerColumn(spinner_name="dots"),
+            TextColumn("[bold cyan]{task.description:<26}"),
+            BarColumn(bar_width=30, complete_style="cyan", finished_style="green"),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            TextColumn("•"),
+            DownloadColumn(),
+            TextColumn("•"),
+            TransferSpeedColumn(),
+            TextColumn("•"),
+            TimeRemainingColumn(),
+        )
 
         try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                print("Downloading video stream...")
-                ydl.download([url])
+            with progress:
+                task = progress.add_task("Resolving video stream...", total=None)
+                ydl_opts.update(self._create_progress_hook(progress, task))
+
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([url])
 
                 if not output_path.exists():
                     raise ValueError("Download failed - output file not found")

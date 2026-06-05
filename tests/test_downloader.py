@@ -173,29 +173,36 @@ def test_progress_hook_callback():
     progress_hook = hook_dict["progress_hooks"][0]
 
     # 1. Test status "downloading" with total_bytes
-    with patch("twitter_video_dl.downloader.tqdm") as mock_tqdm:
-        mock_pbar = mock_tqdm.return_value
-        mock_pbar.n = 0
+    with patch("twitter_video_dl.downloader.Progress") as mock_progress_class:
+        mock_progress = mock_progress_class.return_value
+        mock_task = MagicMock()
+        mock_progress.add_task.return_value = mock_task
 
         # Initial call creates progress bar
         progress_hook(
             {"status": "downloading", "total_bytes": 1000, "downloaded_bytes": 100}
         )
-        mock_tqdm.assert_called_once()
-        mock_pbar.update.assert_called_once_with(100)
+        mock_progress_class.assert_called_once()
+        mock_progress.start.assert_called_once()
+        mock_progress.add_task.assert_called_once_with("Downloading", total=1000)
+        mock_progress.update.assert_called_once_with(
+            mock_task, description="Downloading", completed=100, total=1000
+        )
 
         # Subsequent call updates progress bar
-        mock_pbar.n = 100
-        mock_pbar.update.reset_mock()
+        mock_progress.update.reset_mock()
         progress_hook(
             {"status": "downloading", "total_bytes": 1000, "downloaded_bytes": 250}
         )
-        mock_pbar.update.assert_called_once_with(150)
+        mock_progress.update.assert_any_call(
+            mock_task, description="Downloading", completed=250, total=1000
+        )
 
     # 2. Test status "downloading" with total_bytes_estimate
-    with patch("twitter_video_dl.downloader.tqdm") as mock_tqdm:
-        mock_pbar = mock_tqdm.return_value
-        mock_pbar.n = 0
+    with patch("twitter_video_dl.downloader.Progress") as mock_progress_class:
+        mock_progress = mock_progress_class.return_value
+        mock_task = MagicMock()
+        mock_progress.add_task.return_value = mock_task
         progress_hook = downloader._create_progress_hook()["progress_hooks"][0]
         progress_hook(
             {
@@ -204,11 +211,11 @@ def test_progress_hook_callback():
                 "downloaded_bytes": 50,
             }
         )
-        mock_tqdm.assert_called_once()
+        mock_progress_class.assert_called_once()
 
     # 3. Test progress bar creation error
     with patch(
-        "twitter_video_dl.downloader.tqdm", side_effect=Exception("tqdm init failed")
+        "twitter_video_dl.downloader.Progress", side_effect=Exception("Progress init failed")
     ):
         progress_hook = downloader._create_progress_hook()["progress_hooks"][0]
         with patch.object(downloader.logger, "error") as mock_log_error:
@@ -216,13 +223,14 @@ def test_progress_hook_callback():
                 {"status": "downloading", "total_bytes": 1000, "downloaded_bytes": 100}
             )
             mock_log_error.assert_called_once_with(
-                "Progress bar error: tqdm init failed"
+                "Progress bar error: Progress init failed"
             )
 
     # 4. Test status "finished"
-    with patch("twitter_video_dl.downloader.tqdm") as mock_tqdm:
-        mock_pbar = mock_tqdm.return_value
-        mock_pbar.n = 0
+    with patch("twitter_video_dl.downloader.Progress") as mock_progress_class:
+        mock_progress = mock_progress_class.return_value
+        mock_task = MagicMock()
+        mock_progress.add_task.return_value = mock_task
         progress_hook = downloader._create_progress_hook()["progress_hooks"][0]
         # Initialize pbar
         progress_hook(
@@ -230,12 +238,13 @@ def test_progress_hook_callback():
         )
         # Finished call should close it
         progress_hook({"status": "finished"})
-        mock_pbar.close.assert_called_once()
+        mock_progress.stop.assert_called_once()
 
     # 5. Test status "error"
-    with patch("twitter_video_dl.downloader.tqdm") as mock_tqdm:
-        mock_pbar = mock_tqdm.return_value
-        mock_pbar.n = 0
+    with patch("twitter_video_dl.downloader.Progress") as mock_progress_class:
+        mock_progress = mock_progress_class.return_value
+        mock_task = MagicMock()
+        mock_progress.add_task.return_value = mock_task
         progress_hook = downloader._create_progress_hook()["progress_hooks"][0]
         # Initialize pbar
         progress_hook(
@@ -243,7 +252,7 @@ def test_progress_hook_callback():
         )
         # Error call should close it
         progress_hook({"status": "error", "error": "Download error occurred"})
-        mock_pbar.close.assert_called_once()
+        mock_progress.stop.assert_called_once()
 
 
 @patch("yt_dlp.YoutubeDL")

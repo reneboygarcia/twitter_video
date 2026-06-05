@@ -35,10 +35,21 @@ def handle_errors(func: Callable) -> Callable:
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            console.print(f"❌ Error: {str(e)}", style="red")
-            console.print("\n💡 Tips:", style="yellow")
-            console.print("• Check your internet connection")
-            console.print("• Verify the tweet URL is correct and public")
+            error_message = (
+                f"[bold red]Error:[/bold red] {str(e)}\n\n"
+                "[bold yellow]Tips:[/bold yellow]\n"
+                "• Check your internet connection\n"
+                "• Verify the tweet URL is correct, public, and contains a video"
+            )
+            console.print(
+                Panel(
+                    error_message,
+                    title="⚠️ Something Went Wrong",
+                    title_align="left",
+                    border_style="red",
+                    expand=False,
+                )
+            )
             return None
 
     return wrapper
@@ -49,35 +60,25 @@ class TwitterDownloaderCLI:
 
     def __init__(self):
         self.downloader = None
-        # Configure questionary to use keyboard shortcuts
-        questionary.Style(
+        # Configure questionary to use Claude-inspired developer accents
+        self.style = questionary.Style(
             [
-                ("qmark", "fg:#673ab7 bold"),  # Colors for the selection indicator
-                ("question", "bold"),  # Question text
-                ("answer", "fg:#ff9d00 bold"),  # Selected answer
-                ("pointer", "fg:#673ab7 bold"),  # Pointer arrow
-                ("highlighted", "fg:#673ab7 bold"),  # Highlighted choice
-                ("selected", "fg:#cc5454"),  # Selected choice
+                ("qmark", "fg:#00afaf bold"),        # Cyan question marks
+                ("question", "bold"),                 # Standard bold question
+                ("answer", "fg:#00afaf bold"),        # Cyan answer
+                ("pointer", "fg:#00afaf bold"),       # Cyan pointer
+                ("highlighted", "fg:#00afaf bold"),   # Cyan highlighted choice
+                ("selected", "fg:#00afaf"),           # Cyan selected choice
+                ("instruction", "fg:#8a8a8a italic"), # Muted gray instruction tips
             ]
         )
 
     def show_welcome(self):
         """Display welcome message."""
-        console.print(
-            Panel.fit(
-                "Download videos from Twitter/X easily!\n\n"
-                "Quick Start:\n"
-                "1. Paste a tweet URL\n"
-                "2. Choose video quality\n"
-                "3. Download!\n\n"
-                "Navigation:\n"
-                "• Use ↑/↓ arrows to move\n"
-                "• Press Enter to select\n"
-                "• Press Esc or type 'back' to go back",
-                title="🐦 Twitter Video Downloader",
-                border_style="blue",
-            )
-        )
+        console.print()
+        console.print("[bold cyan]🐦 Twitter Video Downloader[/bold cyan] [dim]v0.1.0[/dim]")
+        console.print("[dim]A simple, elegant CLI tool to download media from Twitter/X[/dim]")
+        console.print()
 
     def initialize_downloader(self) -> None:
         """Initialize the downloader."""
@@ -91,13 +92,13 @@ class TwitterDownloaderCLI:
                 choice = questionary.select(
                     "What would you like to do?",
                     choices=[
-                        "Download a video",
-                        "Show information",
-                        "Exit",
+                        questionary.Choice("Download a video", value="Download a video"),
+                        questionary.Choice("Show information", value="Show information"),
+                        questionary.Choice("Exit", value="Exit"),
                     ],
-                    use_indicator=True,
+                    style=self.style,
                     instruction="(Use ↑/↓ arrows and Enter to select, Esc to exit)",
-                    qmark="🔹",
+                    qmark="?",
                 ).ask()
 
                 if choice is None or choice == "Exit":  # User pressed Esc or chose Exit
@@ -129,25 +130,32 @@ class TwitterDownloaderCLI:
             # Get video quality
             quality = questionary.select(
                 "Select video quality:",
-                choices=["best", "medium", "low", "⟵ Back"],
+                choices=[
+                    questionary.Choice("Best (highest resolution / quality)", value="best"),
+                    questionary.Choice("Medium (balanced quality)", value="medium"),
+                    questionary.Choice("Low (lowest resolution / smaller size)", value="low"),
+                    questionary.Choice("⟵ Back", value="⟵ Back"),
+                ],
                 default="best",
+                style=self.style,
                 instruction="(Use ↑/↓ arrows and Enter to select, Esc to go back)",
-                qmark="🔹",
+                qmark="?",
             ).ask()
 
             if quality is None or quality == "⟵ Back":  # User pressed Esc or Back
                 return
 
             # Ask for custom path or use default Downloads directory
-            prompt_text = (
-                "Do you want to specify a custom save location? "
-                "(Default: Downloads folder)"
-            )
             use_custom_path_choice = questionary.select(
-                prompt_text,
-                choices=["Yes", "No", "⟵ Back"],
+                "Do you want to specify a custom save location? (Default: Downloads folder)",
+                choices=[
+                    questionary.Choice("Yes (specify custom directory/file)", value="Yes"),
+                    questionary.Choice("No (save to Downloads)", value="No"),
+                    questionary.Choice("⟵ Back", value="⟵ Back"),
+                ],
+                style=self.style,
                 instruction="(Use ↑/↓ and Enter)",
-                qmark="🔹",
+                qmark="?",
             ).ask()
 
             if (
@@ -160,7 +168,8 @@ class TwitterDownloaderCLI:
                 output = questionary.path(
                     "Enter the output path (type 'back' to return):",
                     default=str(self.downloader._get_downloads_dir()),
-                    qmark="🔹",
+                    style=self.style,
+                    qmark="?",
                 ).ask()
 
                 if output is None:  # User pressed Esc
@@ -169,16 +178,16 @@ class TwitterDownloaderCLI:
                     return
 
             try:
-                print(f"\nDownloading video from: {url}")
+                console.print(f"\n[bold cyan]🐦 Twitter Video Downloader[/bold cyan]")
+                console.print(f"[dim]Initiating stream download for:[/dim] {url}\n")
                 start_time = time.time()
                 output_path = self.downloader.download_video(url, output, quality)
                 duration = time.time() - start_time
                 console.print(
-                    f"\n✅ Video downloaded successfully to: {output_path} (took {duration:.2f} seconds)",
-                    style="green",
+                    f"\n[bold green]✔[/bold green] Video successfully downloaded to: [bold]{output_path}[/bold] (took {duration:.2f} seconds)\n",
                 )
             except Exception as e:
-                console.print(f"\n❌ Download failed: {str(e)}", style="red")
+                console.print(f"\n❌ {str(e)}", style="red")
                 return
         except KeyboardInterrupt:
             console.print("\n⚠️ Download cancelled", style="yellow")
@@ -192,8 +201,9 @@ class TwitterDownloaderCLI:
                 "Enter the tweet URL (type 'back' to return):",
                 validate=lambda x: x.lower() == "back"
                 or x.startswith(("https://twitter.com/", "https://x.com/")),
+                style=self.style,
                 instruction="(Press Esc or type 'back' to go back)",
-                qmark="🔹",
+                qmark="?",
             ).ask()
 
             if url is None:  # User pressed Esc
@@ -202,23 +212,20 @@ class TwitterDownloaderCLI:
 
     def show_info(self) -> None:
         """Display information about the tool."""
-        console.print(
-            Panel.fit(
-                "A command-line tool to download videos from Twitter/X\n\n"
-                "Features:\n"
-                "• Download videos in different qualities\n"
-                "• Custom output filenames and directories\n"
-                "• Graceful handling of download cancels and errors\n\n"
-                "Navigation:\n"
-                "• Use ↑/↓ arrows to move\n"
-                "• Press Enter to select\n"
-                "• Press Esc or type 'back' to go back\n\n"
-                "For more information, visit: "
-                "https://github.com/reneboygarcia/twitter_video",
-                title="ℹ️ About Twitter Video Downloader",
-                border_style="blue",
-            )
-        )
+        console.print()
+        console.print("[bold cyan]ℹ️ About Twitter Video Downloader[/bold cyan]")
+        console.print("A minimal, elegant command-line tool to download videos from Twitter/X.")
+        console.print()
+        console.print("[bold]Features:[/bold]")
+        console.print("  • Multiple quality settings (Best, Medium, Low)")
+        console.print("  • Custom output filenames and directory resolving")
+        console.print("  • Clean and graceful execution interrupt handling")
+        console.print()
+        console.print("[bold]Repository:[/bold]")
+        console.print("  https://github.com/reneboygarcia/twitter_video")
+        console.print()
+        questionary.press_any_key_to_continue("Press any key to return to main menu...").ask()
+        console.print()
 
 
 @click.command()
@@ -256,16 +263,16 @@ def main(
             cli.initialize_downloader()
             q = quality or "best"
             try:
-                print(f"Downloading video from: {url}")
+                console.print(f"[bold cyan]🐦 Twitter Video Downloader[/bold cyan] [dim]v0.1.0[/dim]")
+                console.print(f"[dim]Direct download requested for:[/dim] {url}\n")
                 start_time = time.time()
                 output_path = cli.downloader.download_video(url, output, q)
                 duration = time.time() - start_time
                 console.print(
-                    f"\n✅ Video downloaded successfully to: {output_path} (took {duration:.2f} seconds)",
-                    style="green",
+                    f"\n[bold green]✔[/bold green] Video successfully downloaded to: [bold]{output_path}[/bold] (took {duration:.2f} seconds)\n",
                 )
             except Exception as e:
-                console.print(f"\n❌ Download failed: {str(e)}", style="red")
+                console.print(f"\n❌ {str(e)}", style="red")
                 sys.exit(1)
         else:
             # Fall back to interactive mode
