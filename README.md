@@ -21,7 +21,7 @@ A modern, interactive and command-line tool to download videos from Twitter/X us
 - **Custom Save Location**: Download to your default Downloads directory or specify a custom folder/file path.
 - **Secure by Design**: Zero bearer tokens, API keys, or developer accounts required. 
 - **Clean Logging**: Log files are stored in standard platform-native cache locations (`~/Library/Logs/twitdl/` on macOS).
-- **Cross-platform**: Tested on macOS, Linux, and Windows (Python 3.8+).
+- **Cross-platform**: Tested on macOS, Linux, and Windows (Python 3.12).
 
 ---
 

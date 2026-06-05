@@ -64,7 +64,7 @@ This guide documents the development, build, test, and code style guidelines for
 ## Code Style & Architecture
 
 ### Python Version Support
-*   Targeting Python >= 3.8
+*   Targeting Python 3.12
 
 ### Formatting
 *   Use **Black** for code styling (default 88 characters line limit).
