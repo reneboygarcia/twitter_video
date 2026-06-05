@@ -75,7 +75,13 @@ class TwitterDownloaderCLI:
 
     def show_welcome(self):
         """Display welcome message."""
+        ascii_art = r""" ______  __     __   __   ______  _____    __        
+/\__  _\/\ \  _ \ \ /\ \ /\__  _\/\  __-. /\ \       
+\/_/\ \/\ \ \/ ".\ \\ \ \\/_/\ \/\ \ \/\ \\ \ \____  
+   \ \_\ \ \__/".~\_\\ \_\  \ \_\ \ \____- \ \_____\ 
+    \/_/  \/_/   \/_/ \/_/   \/_/  \/____/  \/_____/ """
         console.print()
+        console.print(f"[bold cyan]{ascii_art}[/bold cyan]")
         console.print("[bold cyan]🐦 Twitter Video Downloader[/bold cyan] [dim]v0.1.0[/dim]")
         console.print("[dim]A simple, elegant CLI tool to download media from Twitter/X[/dim]")
         console.print()
