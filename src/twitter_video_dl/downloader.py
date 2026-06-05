@@ -119,7 +119,9 @@ class TwitterDownloader:
         tweet_id = self._extract_tweet_id(url)
         return downloads_dir / f"twitter_video_{tweet_id}.mp4"
 
-    def _create_progress_hook(self, progress: Optional[Progress] = None, task: Optional[Any] = None) -> Dict[str, Any]:
+    def _create_progress_hook(
+        self, progress: Optional[Progress] = None, task: Optional[Any] = None
+    ) -> Dict[str, Any]:
         """Create a progress hook for download tracking."""
         local_progress = progress
         local_task = task
@@ -134,7 +136,11 @@ class TwitterDownloader:
                         local_progress = Progress(
                             SpinnerColumn(spinner_name="dots"),
                             TextColumn("[bold #ffffff]{task.description:<26}"),
-                            BarColumn(bar_width=30, complete_style="#ffffff", finished_style="#00ba7c"),
+                            BarColumn(
+                                bar_width=30,
+                                complete_style="#ffffff",
+                                finished_style="#00ba7c",
+                            ),
                             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
                             TextColumn("•"),
                             DownloadColumn(),
@@ -149,7 +155,10 @@ class TwitterDownloader:
                         self.logger.error(f"Progress bar error: {e}")
 
                 if local_progress and local_task is not None:
-                    update_kwargs = {"description": "Downloading", "completed": d.get("downloaded_bytes", 0)}
+                    update_kwargs = {
+                        "description": "Downloading",
+                        "completed": d.get("downloaded_bytes", 0),
+                    }
                     total = d.get("total_bytes") or d.get("total_bytes_estimate")
                     if total is not None:
                         update_kwargs["total"] = total

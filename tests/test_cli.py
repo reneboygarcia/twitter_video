@@ -42,7 +42,9 @@ def test_cli_direct_download_success(mock_downloader_class):
 def test_cli_direct_download_failure(mock_downloader_class):
     mock_downloader = MagicMock()
     mock_downloader_class.return_value = mock_downloader
-    mock_downloader.download_video.side_effect = ValueError("Download failed: Mocked download error")
+    mock_downloader.download_video.side_effect = ValueError(
+        "Download failed: Mocked download error"
+    )
 
     runner = CliRunner()
     url = "https://x.com/NASA/status/123456"
@@ -126,7 +128,10 @@ def test_cli_show_welcome_and_info():
         cli.show_welcome()
         assert mock_print.call_count >= 1
 
-    with patch("twitter_video_dl.cli.console.print") as mock_print, patch("questionary.press_any_key_to_continue") as mock_press:
+    with (
+        patch("twitter_video_dl.cli.console.print") as mock_print,
+        patch("questionary.press_any_key_to_continue") as mock_press,
+    ):
         mock_press.return_value.ask.return_value = None
         cli.show_info()
         assert mock_print.call_count >= 1
@@ -261,7 +266,9 @@ def test_cli_download_workflow_paths(
 
     # 7. Downloader throws ValueError
     mock_select.return_value.ask.side_effect = ["best", "No"]
-    mock_downloader.download_video.side_effect = ValueError("Download failed: Failed to get stream")
+    mock_downloader.download_video.side_effect = ValueError(
+        "Download failed: Failed to get stream"
+    )
     with patch("twitter_video_dl.cli.console.print") as mock_print:
         cli.download_workflow()
         assert any(

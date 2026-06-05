@@ -134,11 +134,16 @@ def test_get_downloads_dir_platforms():
         dl_dir = downloader._get_downloads_dir()
         assert dl_dir == Path.home() / "Downloads"
 
+
 def test_get_downloads_dir_fallback():
     downloader = TwitterDownloader()
-    with patch("pathlib.Path.home", side_effect=RuntimeError("No home directory found")):
+    with patch(
+        "pathlib.Path.home",
+        side_effect=RuntimeError("No home directory found"),
+    ):
         dl_dir = downloader._get_downloads_dir()
         assert dl_dir == Path.cwd()
+
 
 def test_setup_logging_fallback():
     import logging
@@ -220,7 +225,8 @@ def test_progress_hook_callback():
 
     # 3. Test progress bar creation error
     with patch(
-        "twitter_video_dl.downloader.Progress", side_effect=Exception("Progress init failed")
+        "twitter_video_dl.downloader.Progress",
+        side_effect=Exception("Progress init failed"),
     ):
         progress_hook = downloader._create_progress_hook()["progress_hooks"][0]
         with patch.object(downloader.logger, "error") as mock_log_error:
