@@ -12,7 +12,8 @@ class Twitdl < Formula
   end
 
   def install
-    bin.install "twitdl"
+    libexec.install Dir["*"]
+    bin.write_exec_script (libexec/"twitdl")
   end
 
   def caveats
