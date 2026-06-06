@@ -47,6 +47,7 @@ htmlcov/
 *.temp
 *.spec
 *.tar.gz
+homebrew-tap/
 
 # Downloaded Video Outputs
 *.mp4
