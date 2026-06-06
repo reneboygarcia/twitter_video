@@ -3,6 +3,14 @@ import subprocess
 import time
 from pathlib import Path
 
+import pytest
+
+binary_exists = Path("dist/twitdl/twitdl").exists()
+pytestmark = pytest.mark.skipif(
+    not binary_exists,
+    reason="Standalone binary not found at ./dist/twitdl/twitdl. Run 'make build-bin' first."
+)
+
 
 def test_binary_existence_and_size():
     """Verify that the binary folder exists and measure its total size."""
