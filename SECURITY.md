@@ -15,7 +15,7 @@ We take the security of this project seriously. If you find a security vulnerabi
 
 You can report vulnerabilities by:
 - Creating a **Private Vulnerability Report** directly in the GitHub repository's Security tab (if enabled by repository settings).
-- Contacting the maintainer directly at the email listed on the author profile/git commits (reneboygarcia@gmail.com).
+- Contacting the maintainer directly at the email listed on the author profile/git commits (reneboygarcia@field-notes.dev).
 
 Please include the following information in your report:
 - A description of the vulnerability and its potential impact.
