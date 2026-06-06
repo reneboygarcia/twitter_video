@@ -45,6 +45,7 @@ clean:
 	@echo "🧹 Cleaning project..."
 	rm -rf $(VENV_NAME)
 	rm -rf *.egg-info dist build
+	rm -f *.spec
 	rm -rf .pytest_cache .coverage
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
@@ -62,6 +63,15 @@ test:
 	@echo "🧪 Running tests..."
 	$(VENV_BIN)/pytest tests -v
 	@echo "✅ Tests completed!"
+
+build-bin:
+	@echo "⚙️ Compiling standalone binary..."
+	$(VENV_BIN)/pyinstaller --onedir --clean --name twitdl --paths src twitdl_bin.py
+	@echo "✅ Standalone binary built at ./dist/twitdl!"
+
+test-bin: build-bin
+	@echo "🧪 Running standalone binary verification and time trials..."
+	$(VENV_BIN)/python -m pytest tests/test_binary.py -v -s
 
 install:
 	$(VENV_BIN)/pip install .

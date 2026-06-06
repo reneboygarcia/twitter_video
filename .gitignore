@@ -45,6 +45,8 @@ htmlcov/
 *.bak
 *.tmp
 *.temp
+*.spec
+*.tar.gz
 
 # Downloaded Video Outputs
 *.mp4
