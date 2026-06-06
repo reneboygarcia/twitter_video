@@ -256,7 +256,7 @@ class TwitterDownloaderCLI:
     def show_info(self) -> None:
         """Display information about the tool."""
         console.print()
-        console.print("[bold #ffffff]ℹ️ About 𝕏 Video Downloader[/bold #ffffff]")
+        console.print("[bold #ffffff] About 𝕏 Video Downloader[/bold #ffffff]")
         console.print(
             "A minimal, elegant command-line tool to download videos" " from Twitter/X."
         )
