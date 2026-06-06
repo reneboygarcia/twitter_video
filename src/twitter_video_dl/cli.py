@@ -97,7 +97,11 @@ class TwitterDownloaderCLI:
         console.print(
             "[#6e767d]A simple CLI tool to download media from Twitter/X[/#6e767d]"
         )
-        console.print("[dim]💡 To update: brew update && brew upgrade reneboygarcia/tap/twitdl[/dim]")
+        console.print(
+            "[dim]💡 To update: brew update && brew upgrade "
+            "reneboygarcia/tap/twitdl[/dim]"
+        )
+
         console.print()
 
     def initialize_downloader(self) -> None:
@@ -227,8 +231,10 @@ class TwitterDownloaderCLI:
                     f" (took {duration:.2f} seconds)"
                 )
                 console.print(
-                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade reneboygarcia/tap/twitdl[/dim]\n"
+                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade "
+                    "reneboygarcia/tap/twitdl[/dim]\n"
                 )
+
             except Exception as e:
                 console.print(f"\n[bold #f4212e]❌[/bold #f4212e] {str(e)}")
                 return
@@ -286,8 +292,10 @@ class TwitterDownloaderCLI:
         )
         console.print()
         console.print(
-            "  [bold #1da1f2]brew update && brew upgrade reneboygarcia/tap/twitdl[/bold #1da1f2]"
+            "  [bold #1da1f2]brew update && brew upgrade "
+            "reneboygarcia/tap/twitdl[/bold #1da1f2]"
         )
+
         console.print()
         questionary.press_any_key_to_continue(
             "Press any key to return to main menu..."
@@ -347,8 +355,10 @@ def main(
                     f" (took {duration:.2f} seconds)"
                 )
                 console.print(
-                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade reneboygarcia/tap/twitdl[/dim]\n"
+                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade "
+                    "reneboygarcia/tap/twitdl[/dim]\n"
                 )
+
             except Exception as e:
                 console.print(f"\n[bold #f4212e]❌[/bold #f4212e] {str(e)}")
                 sys.exit(1)

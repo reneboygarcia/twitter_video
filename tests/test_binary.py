@@ -8,7 +8,10 @@ import pytest
 binary_exists = Path("dist/twitdl/twitdl").exists()
 pytestmark = pytest.mark.skipif(
     not binary_exists,
-    reason="Standalone binary not found at ./dist/twitdl/twitdl. Run 'make build-bin' first."
+    reason=(
+        "Standalone binary not found at ./dist/twitdl/twitdl. "
+        "Run 'make build-bin' first."
+    )
 )
 
 
@@ -18,7 +21,10 @@ def test_binary_existence_and_size():
     binary_path = bin_dir / "twitdl"
     assert (
         binary_path.exists()
-    ), "Standalone binary not found at ./dist/twitdl/twitdl! Run 'make build-bin' first."
+    ), (
+        "Standalone binary not found at ./dist/twitdl/twitdl! "
+        "Run 'make build-bin' first."
+    )
 
     # Calculate folder size
     size_bytes = sum(f.stat().st_size for f in bin_dir.rglob("*") if f.is_file())
@@ -92,6 +98,8 @@ def test_binary_performance_time_trial():
         )
     else:
         print(
-            f"Result: Standalone binary is {diff_pct:.1f}% slower (typical PyInstaller unpacking overhead)"
+            f"Result: Standalone binary is {diff_pct:.1f}% slower "
+            "(typical PyInstaller unpacking overhead)"
         )
+
     print("=" * 50 + "\n")
