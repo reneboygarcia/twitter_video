@@ -11,6 +11,7 @@ from rich.text import Text
 
 from . import __version__
 from .downloader import TwitterDownloader
+from .update_checker import UpdateChecker
 
 console = Console()
 T = TypeVar("T")
@@ -97,10 +98,28 @@ class TwitterDownloaderCLI:
         console.print(
             "[#6e767d]A simple CLI tool to download media from Twitter/X[/#6e767d]"
         )
-        console.print(
-            "[dim]💡 To update: brew update && brew upgrade "
-            "reneboygarcia/tap/twitdl[/dim]"
-        )
+        try:
+            checker = UpdateChecker(__version__)
+            latest_version = checker.check_for_update()
+            if latest_version:
+                console.print(
+                    "\n[bold #f5b800]🔔 Notification:[/bold #f5b800] A new version "
+                    f"is available: [bold #1da1f2]v{latest_version}[/bold #1da1f2]"
+                )
+                console.print(
+                    "   Run [bold #1da1f2]brew update && brew upgrade "
+                    "reneboygarcia/tap/twitdl[/bold #1da1f2] to upgrade!"
+                )
+            else:
+                console.print(
+                    "[dim]💡 To update: brew update && brew upgrade "
+                    "reneboygarcia/tap/twitdl[/dim]"
+                )
+        except Exception:
+            console.print(
+                "[dim]💡 To update: brew update && brew upgrade "
+                "reneboygarcia/tap/twitdl[/dim]"
+            )
 
         console.print()
 
@@ -341,6 +360,19 @@ def main(
                     "[bold #ffffff]𝕏 Video Downloader[/bold #ffffff]"
                     f" [dim]v{__version__}[/dim]"
                 )
+                try:
+                    checker = UpdateChecker(__version__)
+                    latest = checker.check_for_update()
+                    if latest:
+                        console.print(
+                            "[bold #f5b800]🔔 Notification:[/bold #f5b800] "
+                            "A new version "
+                            f"is available: [bold #1da1f2]v{latest}[/bold #1da1f2] "
+                            "(run `brew update && brew upgrade "
+                            "reneboygarcia/tap/twitdl` to upgrade)"
+                        )
+                except Exception:
+                    pass
                 console.print(
                     f"[#6e767d]Direct download requested for:[/#6e767d] {url}\n"
                 )

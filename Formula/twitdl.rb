@@ -5,7 +5,7 @@ class Twitdl < Formula
 
   if Hardware::CPU.arm?
     url "https://github.com/reneboygarcia/twitter_video/releases/download/v0.1.2/twitdl-macos-arm64.tar.gz"
-    sha256 "72071711892d3a9bde850205c82766123845650735c10afcb64d69e050b9ba2f"
+    sha256 "7597b5bae6e55cd23897aaae8243c10974751a688df7cf6379687261d6ae03da"
   else
     url "https://github.com/reneboygarcia/twitter_video/releases/download/v0.1.2/twitdl-macos-x86_64.tar.gz"
     sha256 "PLACEHOLDER_X86_64_SHA256"
