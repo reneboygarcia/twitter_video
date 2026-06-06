@@ -9,6 +9,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
+from . import __version__
 from .downloader import TwitterDownloader
 
 console = Console()
@@ -91,12 +92,12 @@ class TwitterDownloaderCLI:
             t.stylize("dim #6e767d", 33, len(line))
             console.print(t)
         console.print(
-            "[bold #ffffff]𝕏 Video Downloader[/bold #ffffff] [dim]v0.1.1[/dim]"
+            f"[bold #ffffff]𝕏 Video Downloader[/bold #ffffff] [dim]v{__version__}[/dim]"
         )
         console.print(
             "[#6e767d]A simple CLI tool to download media from Twitter/X[/#6e767d]"
         )
-        console.print("[dim]💡 To update: brew update && brew upgrade twitdl[/dim]")
+        console.print("[dim]💡 To update: brew update && brew upgrade reneboygarcia/tap/twitdl[/dim]")
         console.print()
 
     def initialize_downloader(self) -> None:
@@ -226,7 +227,7 @@ class TwitterDownloaderCLI:
                     f" (took {duration:.2f} seconds)"
                 )
                 console.print(
-                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade twitdl[/dim]\n"
+                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade reneboygarcia/tap/twitdl[/dim]\n"
                 )
             except Exception as e:
                 console.print(f"\n[bold #f4212e]❌[/bold #f4212e] {str(e)}")
@@ -279,12 +280,13 @@ class TwitterDownloaderCLI:
         console.print(
             "[bold #ffffff]🔄 How to Update 𝕏 Video Downloader[/bold #ffffff]"
         )
+        console.print(f"Current version: [bold #1da1f2]v{__version__}[/bold #1da1f2]")
         console.print(
-            "To update the tool to the latest version, run the following command:"
+            "To check for and install updates, run the following command:"
         )
         console.print()
         console.print(
-            "  [bold #1da1f2]brew update && brew upgrade twitdl[/bold #1da1f2]"
+            "  [bold #1da1f2]brew update && brew upgrade reneboygarcia/tap/twitdl[/bold #1da1f2]"
         )
         console.print()
         questionary.press_any_key_to_continue(
@@ -331,7 +333,7 @@ def main(
             try:
                 console.print(
                     "[bold #ffffff]𝕏 Video Downloader[/bold #ffffff]"
-                    " [dim]v0.1.1[/dim]"
+                    f" [dim]v{__version__}[/dim]"
                 )
                 console.print(
                     f"[#6e767d]Direct download requested for:[/#6e767d] {url}\n"
@@ -345,7 +347,7 @@ def main(
                     f" (took {duration:.2f} seconds)"
                 )
                 console.print(
-                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade twitdl[/dim]\n"
+                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade reneboygarcia/tap/twitdl[/dim]\n"
                 )
             except Exception as e:
                 console.print(f"\n[bold #f4212e]❌[/bold #f4212e] {str(e)}")

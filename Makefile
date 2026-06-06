@@ -66,7 +66,7 @@ test:
 
 build-bin:
 	@echo "⚙️ Compiling standalone binary..."
-	$(VENV_BIN)/pyinstaller --onedir --clean --name twitdl --paths src twitdl_bin.py
+	$(VENV_BIN)/pyinstaller --onedir --clean --noconfirm --name twitdl --paths src twitdl_bin.py
 	@echo "✅ Standalone binary built at ./dist/twitdl!"
 
 test-bin: build-bin

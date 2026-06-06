@@ -54,6 +54,7 @@ def test_binary_performance_time_trial():
             ["venv/bin/python", "-m", "twitter_video_dl.cli", "--help"],
             capture_output=True,
             check=True,
+            env={**os.environ, "PYTHONPATH": "src"}
         )
         python_times.append(time.perf_counter() - start)
 
