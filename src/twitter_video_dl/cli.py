@@ -94,8 +94,9 @@ class TwitterDownloaderCLI:
             "[bold #ffffff]𝕏 Video Downloader[/bold #ffffff] [dim]v0.1.1[/dim]"
         )
         console.print(
-            "[#6e767d]A simple CLI tool to download media" " from Twitter/X[/#6e767d]"
+            "[#6e767d]A simple CLI tool to download media from Twitter/X[/#6e767d]"
         )
+        console.print("[dim]💡 To update: brew update && brew upgrade twitdl[/dim]")
         console.print()
 
     def initialize_downloader(self) -> None:
@@ -116,6 +117,9 @@ class TwitterDownloaderCLI:
                         questionary.Choice(
                             "Show information", value="Show information"
                         ),
+                        questionary.Choice(
+                            "How to update / Check for updates", value="How to update"
+                        ),
                         questionary.Choice("Exit", value="Exit"),
                     ],
                     style=self.style,
@@ -130,6 +134,7 @@ class TwitterDownloaderCLI:
                 actions = {
                     "Download a video": self.download_workflow,
                     "Show information": self.show_info,
+                    "How to update": self.show_update_instructions,
                 }
 
                 if action := actions.get(choice):
@@ -218,7 +223,10 @@ class TwitterDownloaderCLI:
                 console.print(
                     f"\n[bold #00ba7c]✔[/bold #00ba7c] Video successfully"
                     f" downloaded to: [bold]{output_path}[/bold]"
-                    f" (took {duration:.2f} seconds)\n"
+                    f" (took {duration:.2f} seconds)"
+                )
+                console.print(
+                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade twitdl[/dim]\n"
                 )
             except Exception as e:
                 console.print(f"\n[bold #f4212e]❌[/bold #f4212e] {str(e)}")
@@ -259,6 +267,25 @@ class TwitterDownloaderCLI:
         console.print()
         console.print("[bold]Repository:[/bold]")
         console.print("  https://github.com/reneboygarcia/twitter_video")
+        console.print()
+        questionary.press_any_key_to_continue(
+            "Press any key to return to main menu..."
+        ).ask()
+        console.print()
+
+    def show_update_instructions(self) -> None:
+        """Display instructions on how to update the CLI."""
+        console.print()
+        console.print(
+            "[bold #ffffff]🔄 How to Update 𝕏 Video Downloader[/bold #ffffff]"
+        )
+        console.print(
+            "To update the tool to the latest version, run the following command:"
+        )
+        console.print()
+        console.print(
+            "  [bold #1da1f2]brew update && brew upgrade twitdl[/bold #1da1f2]"
+        )
         console.print()
         questionary.press_any_key_to_continue(
             "Press any key to return to main menu..."
@@ -315,7 +342,10 @@ def main(
                 console.print(
                     f"\n[bold #00ba7c]✔[/bold #00ba7c] Video successfully"
                     f" downloaded to: [bold]{output_path}[/bold]"
-                    f" (took {duration:.2f} seconds)\n"
+                    f" (took {duration:.2f} seconds)"
+                )
+                console.print(
+                    "[dim]💡 Keep twitdl up-to-date: brew update && brew upgrade twitdl[/dim]\n"
                 )
             except Exception as e:
                 console.print(f"\n[bold #f4212e]❌[/bold #f4212e] {str(e)}")

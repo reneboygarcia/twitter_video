@@ -140,6 +140,14 @@ def test_cli_show_welcome_and_info():
         cli.show_info()
         assert mock_print.call_count >= 1
 
+    with (
+        patch("twitter_video_dl.cli.console.print") as mock_print,
+        patch("questionary.press_any_key_to_continue") as mock_press,
+    ):
+        mock_press.return_value.ask.return_value = None
+        cli.show_update_instructions()
+        assert mock_print.call_count >= 1
+
 
 @patch("questionary.text")
 def test_cli_get_tweet_url(mock_text):
