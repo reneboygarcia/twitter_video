@@ -93,33 +93,128 @@ class TwitterDownloader:
         except Exception:
             return Path.cwd()
 
+    def _is_safe_path(self, path: Path) -> bool:
+        """Verify that the target path is safe.
+
+        Checks that it does not write to system-critical paths or pose security risks.
+        """
+        try:
+            # Fully resolve symlinks and relative path components
+            resolved = path.resolve()
+
+            # 1. Prevent writing to root-level system folders
+            critical_prefixes = [
+                "/System",
+                "/Library",
+                "/private/etc",
+                "/private/var",
+                "/etc",
+                "/bin",
+                "/sbin",
+                "/boot",
+                "/dev",
+                "/proc",
+                "/sys",
+                "/root",
+            ]
+
+            resolved_str = str(resolved)
+            for prefix in critical_prefixes:
+                if resolved_str == prefix or resolved_str.startswith(prefix + "/"):
+                    return False
+
+            # Windows system folders
+            if platform.system() == "Windows":
+                resolved_lower = resolved_str.lower()
+                windir = os.environ.get("windir", "C:\\Windows").lower()
+                systemdrive = os.environ.get("SystemDrive", "C:").lower()
+
+                critical_prefixes_win = [
+                    windir,
+                    f"{systemdrive}\\windows",
+                    f"{systemdrive}\\program files",
+                    f"{systemdrive}\\program files (x86)",
+                ]
+                for prefix in critical_prefixes_win:
+                    if resolved_lower == prefix or resolved_lower.startswith(
+                        prefix + "\\"
+                    ):
+                        return False
+
+            return True
+        except Exception:
+            return False
+
     def _get_output_path(self, url: str, output: Optional[str] = None) -> Path:
         """Generate output path for the video."""
         downloads_dir = self._get_downloads_dir()
         tweet_id = self._extract_tweet_id(url)
+        downloads_dir_resolved = downloads_dir.resolve()
 
         if output:
             custom_path = Path(output)
+            is_absolute = custom_path.is_absolute()
+
             if (
                 custom_path == downloads_dir
                 or custom_path.is_dir()
                 or output.endswith(("/", "\\"))
             ):
-                custom_path.mkdir(parents=True, exist_ok=True)
-                return custom_path / f"twitter_video_{tweet_id}.mp4"
+                resolved_dir = (
+                    custom_path.resolve()
+                    if is_absolute
+                    else (downloads_dir / custom_path).resolve()
+                )
 
-            resolved_path = (
-                custom_path
-                if custom_path.is_absolute()
-                else downloads_dir / custom_path
-            )
+                # Check for directory traversal in relative paths
+                if not is_absolute:
+                    try:
+                        resolved_dir.relative_to(downloads_dir_resolved)
+                    except ValueError:
+                        raise ValueError(
+                            "Path traversal detected: path escapes downloads directory."
+                        )
+
+                # Verify safety against critical system paths
+                if not self._is_safe_path(resolved_dir):
+                    raise ValueError(
+                        "Write safety violation: Output directory "
+                        f"'{resolved_dir}' is a restricted system location."
+                    )
+
+                resolved_dir.mkdir(parents=True, exist_ok=True)
+                return resolved_dir / f"twitter_video_{tweet_id}.mp4"
+
+            resolved_path = custom_path if is_absolute else downloads_dir / custom_path
+
+            # Check for directory traversal in relative paths
+            if not is_absolute:
+                try:
+                    resolved_path.resolve().relative_to(downloads_dir_resolved)
+                except ValueError:
+                    raise ValueError(
+                        "Path traversal detected: path escapes downloads directory."
+                    )
+
+            # Verify safety against critical system paths
+            if not self._is_safe_path(resolved_path):
+                raise ValueError(
+                    "Write safety violation: Output path "
+                    f"'{resolved_path.resolve()}' is a restricted system location."
+                )
 
             if resolved_path.is_dir():
                 return resolved_path / f"twitter_video_{tweet_id}.mp4"
 
             return resolved_path
 
-        return downloads_dir / f"twitter_video_{tweet_id}.mp4"
+        default_path = downloads_dir / f"twitter_video_{tweet_id}.mp4"
+        if not self._is_safe_path(default_path):
+            raise ValueError(
+                "Write safety violation: Default output path "
+                f"'{default_path.resolve()}' is a restricted system location."
+            )
+        return default_path
 
     def _create_progress_hook(
         self, progress: Optional[Progress] = None, task: Optional[Any] = None

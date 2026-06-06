@@ -60,6 +60,34 @@ def test_get_output_path():
     assert output_path.parent == downloads_dir
 
 
+def test_get_output_path_traversal_prevention():
+    downloader = TwitterDownloader()
+    url = "https://x.com/NASA/status/123456"
+
+    # Directory traversal using relative path
+    with pytest.raises(ValueError, match="Path traversal detected"):
+        downloader._get_output_path(url, "../traversal_test.mp4")
+
+    with pytest.raises(ValueError, match="Path traversal detected"):
+        downloader._get_output_path(url, "subdir/../../traversal_test.mp4")
+
+
+def test_get_output_path_system_write_safety():
+    downloader = TwitterDownloader()
+    url = "https://x.com/NASA/status/123456"
+
+    # System-critical absolute directory (block list check)
+    bad_abs_path = (
+        "/etc/passwd" if platform.system() != "Windows" else "C:\\Windows\\system.ini"
+    )
+    with pytest.raises(ValueError, match="Write safety violation"):
+        downloader._get_output_path(url, bad_abs_path)
+
+    bad_abs_dir = "/System" if platform.system() != "Windows" else "C:\\Windows"
+    with pytest.raises(ValueError, match="Write safety violation"):
+        downloader._get_output_path(url, bad_abs_dir)
+
+
 @patch("yt_dlp.YoutubeDL")
 def test_download_video_success(mock_ytdl_class):
     mock_ytdl = MagicMock()

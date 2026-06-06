@@ -1,13 +1,13 @@
 class Twitdl < Formula
   desc "Interactive CLI tool to download videos from Twitter/X"
   homepage "https://github.com/reneboygarcia/twitter_video"
-  version "0.1.1"
+  version "0.1.2"
 
   if Hardware::CPU.arm?
-    url "https://github.com/reneboygarcia/twitter_video/releases/download/v0.1.1/twitdl-macos-arm64.tar.gz"
-    sha256 "3e064cadb52ef8e23d25f523e09c04bb2f36e34d21019a22c33565ba4ab49976"
+    url "https://github.com/reneboygarcia/twitter_video/releases/download/v0.1.2/twitdl-macos-arm64.tar.gz"
+    sha256 "72071711892d3a9bde850205c82766123845650735c10afcb64d69e050b9ba2f"
   else
-    url "https://github.com/reneboygarcia/twitter_video/releases/download/v0.1.1/twitdl-macos-x86_64.tar.gz"
+    url "https://github.com/reneboygarcia/twitter_video/releases/download/v0.1.2/twitdl-macos-x86_64.tar.gz"
     sha256 "PLACEHOLDER_X86_64_SHA256"
   end
 

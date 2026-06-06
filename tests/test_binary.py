@@ -11,7 +11,7 @@ pytestmark = pytest.mark.skipif(
     reason=(
         "Standalone binary not found at ./dist/twitdl/twitdl. "
         "Run 'make build-bin' first."
-    )
+    ),
 )
 
 
@@ -19,9 +19,7 @@ def test_binary_existence_and_size():
     """Verify that the binary folder exists and measure its total size."""
     bin_dir = Path("dist/twitdl")
     binary_path = bin_dir / "twitdl"
-    assert (
-        binary_path.exists()
-    ), (
+    assert binary_path.exists(), (
         "Standalone binary not found at ./dist/twitdl/twitdl! "
         "Run 'make build-bin' first."
     )
@@ -68,7 +66,7 @@ def test_binary_performance_time_trial():
             ["venv/bin/python", "-m", "twitter_video_dl.cli", "--help"],
             capture_output=True,
             check=True,
-            env={**os.environ, "PYTHONPATH": "src"}
+            env={**os.environ, "PYTHONPATH": "src"},
         )
         python_times.append(time.perf_counter() - start)
 

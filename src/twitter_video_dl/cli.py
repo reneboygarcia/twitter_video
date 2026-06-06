@@ -287,9 +287,7 @@ class TwitterDownloaderCLI:
             "[bold #ffffff]🔄 How to Update 𝕏 Video Downloader[/bold #ffffff]"
         )
         console.print(f"Current version: [bold #1da1f2]v{__version__}[/bold #1da1f2]")
-        console.print(
-            "To check for and install updates, run the following command:"
-        )
+        console.print("To check for and install updates, run the following command:")
         console.print()
         console.print(
             "  [bold #1da1f2]brew update && brew upgrade "
