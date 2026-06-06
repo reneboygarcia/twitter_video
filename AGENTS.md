@@ -23,3 +23,5 @@
 * Execution logs are written to standard platform logs paths (e.g., `~/Library/Logs/twitdl/download.log` on macOS) with local fallbacks.
 * There is a pytest-based unit test suite in the `tests/` directory verifying CLI parsing and backend download configurations.
 * A Homebrew Formula is maintained in `Formula/twitdl.rb` and distributes precompiled standalone macOS binaries (packaged via PyInstaller `--onedir`) to avoid Python runtime dependency drift and packaging overhead.
+* A Trivy configuration `trivy.yaml` is maintained in the root directory to exclude `venv`, `.venv`, and build/distribution directories from security scans.
+
