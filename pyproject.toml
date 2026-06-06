@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "twitter_video_dl"
-version = "0.1.0"
+version = "0.1.1"
 description = "An interactive CLI tool to download videos from Twitter/X"
 readme = "README.md"
 license = { text = "MIT" }
-authors = [{ name = "reneboygarcia", email = "reneboygarcia@gmail.com" }]
+authors = [{ name = "reneboygarcia", email = "reneboygarcia@field-notes.dev" }]
 requires-python = ">=3.12,<3.13"
 classifiers = [
     "Development Status :: 3 - Alpha",

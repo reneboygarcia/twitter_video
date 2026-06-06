@@ -7,6 +7,7 @@ import click
 import questionary
 from rich.console import Console
 from rich.panel import Panel
+from rich.text import Text
 
 from .downloader import TwitterDownloader
 
@@ -84,9 +85,13 @@ class TwitterDownloaderCLI:
             "    \\/_/  \\/_/   \\/_/ \\/_/   \\/_/  \\/____/  \\/_____/"
         )
         console.print()
-        console.print(f"[bold #ffffff]{ascii_art}[/bold #ffffff]")
+        for line in ascii_art.split("\n"):
+            t = Text(line)
+            t.stylize("bold #1da1f2", 0, 33)
+            t.stylize("dim #6e767d", 33, len(line))
+            console.print(t)
         console.print(
-            "[bold #ffffff]𝕏 Video Downloader[/bold #ffffff] [dim]v0.1.0[/dim]"
+            "[bold #ffffff]𝕏 Video Downloader[/bold #ffffff] [dim]v0.1.1[/dim]"
         )
         console.print(
             "[#6e767d]A simple CLI tool to download media" " from Twitter/X[/#6e767d]"
@@ -299,7 +304,7 @@ def main(
             try:
                 console.print(
                     "[bold #ffffff]𝕏 Video Downloader[/bold #ffffff]"
-                    " [dim]v0.1.0[/dim]"
+                    " [dim]v0.1.1[/dim]"
                 )
                 console.print(
                     f"[#6e767d]Direct download requested for:[/#6e767d] {url}\n"

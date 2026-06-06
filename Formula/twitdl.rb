@@ -4,7 +4,7 @@ class Twitdl < Formula
   desc "Interactive CLI tool to download videos from Twitter/X"
   homepage "https://github.com/reneboygarcia/twitter_video"
   url "https://github.com/reneboygarcia/twitter_video.git", branch: "main"
-  version "0.1.0"
+  version "0.1.1"
 
   depends_on "python@3.12"
 
