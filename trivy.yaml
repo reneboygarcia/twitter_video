@@ -4,3 +4,4 @@ scan:
     - .venv
     - build
     - dist
+    - target

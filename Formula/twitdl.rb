@@ -1,19 +1,16 @@
 class Twitdl < Formula
   desc "Interactive CLI tool to download videos from Twitter/X"
   homepage "https://github.com/reneboygarcia/twitter_video"
-  version "0.1.2"
+  url "https://github.com/reneboygarcia/twitter_video/archive/refs/tags/v0.2.0.tar.gz"
+  version "0.2.0"
+  sha256 "PLACEHOLDER_SHA256"
+  head "file:///Users/reneboygarcia/Documents/Github%20Projects/Twitter%20Video%20Downloader", :using => :git
 
-  if Hardware::CPU.arm?
-    url "https://github.com/reneboygarcia/twitter_video/releases/download/v0.1.2/twitdl-macos-arm64.tar.gz"
-    sha256 "7597b5bae6e55cd23897aaae8243c10974751a688df7cf6379687261d6ae03da"
-  else
-    url "https://github.com/reneboygarcia/twitter_video/releases/download/v0.1.2/twitdl-macos-x86_64.tar.gz"
-    sha256 "PLACEHOLDER_X86_64_SHA256"
-  end
+  depends_on "rust" => :build
+  depends_on "yt-dlp"
 
   def install
-    libexec.install Dir["*"]
-    bin.write_exec_script (libexec/"twitdl")
+    system "cargo", "install", *std_cargo_args
   end
 
   def caveats

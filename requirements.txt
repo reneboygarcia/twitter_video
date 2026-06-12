@@ -1,8 +1,0 @@
-# Runtime dependencies — pinned for reproducible installs
-# Dev tools live in requirements-dev.txt
-click==8.4.1
-requests==2.34.2
-python-dotenv==1.2.2
-yt-dlp==2026.3.17
-questionary==2.1.1
-rich==15.0.0

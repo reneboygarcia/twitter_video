@@ -1,9 +1,0 @@
-# Development dependencies — install with: pip install -e ".[dev]"
-# or: pip install -r requirements-dev.txt
--r requirements.txt
-pytest==9.0.3
-coverage==7.14.1
-black==26.5.1
-isort==8.0.1
-flake8==7.3.0
-mypy==2.1.0

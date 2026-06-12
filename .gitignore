@@ -54,3 +54,8 @@ homebrew-tap/
 
 # SBOM Outputs
 sbom.cyclonedx.json
+
+
+# Added by cargo
+
+/target

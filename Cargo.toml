@@ -1,0 +1,20 @@
+[package]
+name = "twitdl"
+version = "0.2.0"
+edition = "2021"
+description = "An interactive and command-line tool to download videos from Twitter/X"
+authors = ["Rene Boy Garcia"]
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+inquire = "0.7"
+indicatif = "0.17"
+ureq = { version = "2.10", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dirs = "5.0"
+console = "0.15"
+regex = "1.10"
+tempfile = "3.10"
+ctrlc = "3.4"
+chrono = "0.4"
