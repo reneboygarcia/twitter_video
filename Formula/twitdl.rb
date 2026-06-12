@@ -4,8 +4,8 @@ class Twitdl < Formula
   homepage "https://github.com/reneboygarcia/twitter_video"
   url "https://github.com/reneboygarcia/twitter_video/archive/refs/tags/v0.2.0.tar.gz"
   version "0.2.0"
-  sha256 "PLACEHOLDER_SHA256"
-  head "file:///Users/reneboygarcia/Documents/Github%20Projects/Twitter%20Video%20Downloader", using: :git, branch: "feat/rust-061326"
+  sha256 "68cea248adf9dec4ad6b1e94eb7a2ebd6ff2269c7c29b131b8bd602423bcabe7"
+  head "https://github.com/reneboygarcia/twitter_video.git", branch: "main"
 
   depends_on "rust" => :build
   depends_on "yt-dlp"
