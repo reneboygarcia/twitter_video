@@ -1,60 +1,76 @@
 # Twitter Video Downloader Developer Guide (CLAUDE.md)
 
-This guide documents the development, build, test, and code style guidelines for the Twitter Video Downloader.
+This guide documents the development, build, test, and code style guidelines for the Rust-based `twitdl` Twitter Video Downloader.
 
 ## Command Reference
 
-### Environment Setup
-*   **Complete developer setup (venv, deps, dev-deps, editable install):**
+### Environment Setup & Installation
+*   **Compile and install standalone release binary to PATH (via Cargo):**
     ```bash
-    make dev-setup
+    make install
     ```
-*   **Manual virtual environment activation:**
+    or manually:
     ```bash
-    source venv/bin/activate
+    cargo install --path .
     ```
 
 ### Execution
-*   **Run the CLI tool directly (requires active virtual environment):**
+*   **Run interactive guided mode:**
     ```bash
-    twitdl
+    cargo run
     ```
-*   **Run the CLI tool interactive guided mode:**
+*   **Run direct download mode:**
     ```bash
-    twitdl --guide
+    cargo run -- <tweet-url>
+    ```
+*   **Run installed/Homebrew binary:**
+    ```bash
+    twitdl <tweet-url>
     ```
 
 ### Testing
-*   **Run pytest test suite:**
+*   **Run all unit and integration tests:**
     ```bash
     make test
     ```
     or manually:
     ```bash
-    venv/bin/pytest tests -v
+    cargo test
     ```
 
 #### Test Discipline
 *   **Immutable Tests**: Tests are considered the source of truth contract. If a test fails and its expectation is correct, do not modify or relax the test. Instead, iterate on and fix the production code until the test passes.
-*   **When to edit tests**: Only adjust or update test cases when the specification itself changes, or if the test was written against the wrong contract/API.
+*   **When to Edit Tests**: Only adjust or update test cases when the specification itself changes, or if the test was written against the wrong contract/API.
 *   **Isolation**: Keep unit and integration tests focused and isolated.
 
-### Linting, Formatting, & Type Checking
-*   **Format code (Black & isort):**
+### Formatting, Linting, & Security
+*   **Format code (rustfmt):**
     ```bash
     make format
     ```
-*   **Lint check:**
+    or manually:
     ```bash
-    venv/bin/flake8 src/
+    cargo fmt
     ```
-*   **Static type checking:**
+*   **Check formatting without modifying files:**
     ```bash
-    venv/bin/mypy src/
+    cargo fmt -- --check
+    ```
+*   **Run Trivy vulnerability scan (CRITICAL,HIGH; exit 1 if found):**
+    ```bash
+    make sca
+    ```
+*   **Generate CycloneDX SBOM (Trivy) to sbom.cyclonedx.json:**
+    ```bash
+    make sbom
+    ```
+*   **Run pre-merge checks (test, sca, formatting checks):**
+    ```bash
+    make pre-merge
     ```
 
 ### Cleanup
-*   **Remove build artifacts, caches, and virtual environment:**
+*   **Remove cargo build artifacts and local SBOM outputs:**
     ```bash
     make clean
     ```
@@ -63,16 +79,21 @@ This guide documents the development, build, test, and code style guidelines for
 
 ## Code Style & Architecture
 
-### Python Version Support
-*   Targeting Python 3.12
+### Rust Version & Toolchain
+*   Targeting Rust 2021 Edition.
+*   Uses standard `cargo fmt` for formatting.
 
-### Formatting
-*   Use **Black** for code styling (default 88 characters line limit).
-*   Use **isort** for import ordering.
-*   Formatting check runs during CI/CD or PR verification.
-
-### Design Principles
+### Design Principles & Modules
 *   **Simplicity**: Prefer explicit over implicit logic, minimize abstractions, and follow the Single Responsibility Principle.
-*   **Error Handling**: Decorate CLI interaction methods with grace handlers (`@handle_errors`, `@handle_back_option`) to capture and print informative messages instead of raw tracebacks.
-*   **Logging**: Keep log calls clean. Logs are written automatically to `download.log` and printed to standard output.
-*   **User Interface**: Maintain interactive prompts with `questionary` and stylized outputs using `rich`. Keep interface layouts clean and user friendly.
+*   **Downloader Module (`src/downloader.rs`)**:
+    *   Subprocess wrapper around system dependency `yt-dlp`.
+    *   Reads stdout of `yt-dlp --progress-template "%(progress)j"` as JSON lines for real-time `indicatif` progress bar updates.
+    *   Applies path traversal prevention and critical system directories blocklists.
+    *   Implements `CleanupGuard` utilizing Rust's `Drop` trait to clean up incomplete `.part` files on failure/interrupt.
+*   **Update Checker Module (`src/update_checker.rs`)**:
+    *   Checks for newer releases against the GitHub API.
+    *   Caches update check status locally for 24 hours (`update_cache.json` in system caches dir).
+*   **Main Module (`src/main.rs`)**:
+    *   CLI entry point using `clap` for direct execution arguments.
+    *   Uses `inquire` for interactive prompts and guided user flows.
+*   **Logging**: Logs are written to platform-specific log paths (e.g. `~/Library/Logs/twitdl/download.log` on macOS) with local fallback.
