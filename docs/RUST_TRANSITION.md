@@ -1,3 +1,16 @@
+---
+title: "Transition Report: Python to Rust Rewrite"
+date: "2026-06-13"
+description: "A comprehensive record of the engineering decisions, architectural changes, performance benchmarks, and distribution updates made during the twitdl rewrite."
+author: "Antigravity"
+tags:
+  - Rust
+  - Python
+  - Migration
+  - Benchmarks
+  - Homebrew
+---
+
 # Transition Report: Python to Rust Rewrite
 
 This document records the engineering decisions, architectural changes, performance benchmarks, and distribution updates made during the transition of the `twitdl` CLI utility from Python to Rust.
