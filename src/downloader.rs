@@ -336,7 +336,6 @@ impl TwitterDownloader {
             .arg(quality_opts.1)
             .arg("-o")
             .arg(&output_path)
-            .arg("--quiet")
             .arg("--no-warnings")
             .arg("--add-headers")
             .arg(format!("User-Agent:{}", DEFAULT_USER_AGENT))
