@@ -34,6 +34,11 @@ jobs:
         with:
           components: clippy, rustfmt
 
+      - name: Install yt-dlp
+        run: |
+          pip install yt-dlp
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
       - name: Run unit and integration tests
         run: cargo test
 
