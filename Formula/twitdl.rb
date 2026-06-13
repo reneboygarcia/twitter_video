@@ -3,7 +3,6 @@ class Twitdl < Formula
   desc "Interactive CLI tool to download videos from Twitter/X"
   homepage "https://github.com/reneboygarcia/twitter_video"
   url "https://github.com/reneboygarcia/twitter_video/archive/refs/tags/v0.2.7.tar.gz"
-  version "0.2.7"
   sha256 "02ab5e5ea24cb0d79078b61e52ecd1bab3ad94dd00a5c6ec2f71f0fbc92e6dde"
   head "https://github.com/reneboygarcia/twitter_video.git", branch: "main"
 
@@ -30,6 +29,6 @@ class Twitdl < Formula
   end
 
   test do
-    system "#{bin}/twitdl", "--help"
+    system bin/"twitdl", "--help"
   end
 end
