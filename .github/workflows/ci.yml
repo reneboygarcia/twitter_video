@@ -34,6 +34,9 @@ jobs:
         with:
           components: clippy, rustfmt
 
+      - name: Install yt-dlp
+        run: pip install yt-dlp
+
       - name: Run unit and integration tests
         run: cargo test
 
