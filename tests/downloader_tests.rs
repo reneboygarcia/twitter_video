@@ -169,12 +169,9 @@ fn test_render_config_fields() {
     let config = inquire::ui::RenderConfig {
         prompt: inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(39)),
         answer: inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::rgb(29, 161, 242)),
-        help_message: inquire::ui::StyleSheet::new()
-            .with_fg(inquire::ui::Color::AnsiValue(243)),
-        default_value: inquire::ui::StyleSheet::new()
-            .with_fg(inquire::ui::Color::AnsiValue(243)),
-        placeholder: inquire::ui::StyleSheet::new()
-            .with_fg(inquire::ui::Color::AnsiValue(243)),
+        help_message: inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(243)),
+        default_value: inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(243)),
+        placeholder: inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(243)),
         ..inquire::ui::RenderConfig::default()
     };
     assert_eq!(config.prompt.fg, Some(inquire::ui::Color::AnsiValue(39)));
