@@ -163,3 +163,12 @@ fn test_get_video_info_failure() {
     assert!(err.is_err());
     assert!(err.unwrap_err().contains("Could not fetch video info"));
 }
+
+#[test]
+fn test_render_config_fields() {
+    let mut config = inquire::ui::RenderConfig::default();
+    config.prompt = inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(39));
+    config.answer = inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::rgb(29, 161, 242));
+    assert_eq!(config.prompt.fg, Some(inquire::ui::Color::AnsiValue(39)));
+    assert_eq!(config.answer.fg, Some(inquire::ui::Color::rgb(29, 161, 242)));
+}
