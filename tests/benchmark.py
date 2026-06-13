@@ -6,11 +6,21 @@ import shutil
 from pathlib import Path
 
 def setup_python_env():
-    """Extract the original Python files from the main branch to a temp directory."""
+    """Extract the original Python files from the main branch (before deletion) to a temp directory."""
     temp_dir = Path(tempfile.mkdtemp(prefix="twitdl_python_"))
     src_dir = temp_dir / "src"
     pkg_dir = src_dir / "twitter_video_dl"
     pkg_dir.mkdir(parents=True, exist_ok=True)
+
+    # Find the commit that deleted the python files
+    try:
+        deletion_commit = subprocess.check_output(
+            ["git", "log", "-1", "--diff-filter=D", "--format=%H", "--", "src/twitter_video_dl/__init__.py"],
+            text=True
+        ).strip()
+        ref = f"{deletion_commit}~1"
+    except Exception:
+        ref = "main~1"
 
     # List of files to extract
     files = [
@@ -22,12 +32,12 @@ def setup_python_env():
 
     for f in files:
         try:
-            content = subprocess.check_output(["git", "show", f"main:{f}"], text=True)
+            content = subprocess.check_output(["git", "show", f"{ref}:{f}"], text=True)
             out_file = temp_dir / f
             out_file.parent.mkdir(parents=True, exist_ok=True)
             out_file.write_text(content)
         except Exception as e:
-            print(f"Warning: Could not extract {f}: {e}")
+            print(f"Warning: Could not extract {f} using {ref}: {e}")
 
     return temp_dir
 
@@ -44,7 +54,7 @@ def main():
         # Fallback to system python
         venv_python = Path("python3")
         
-    runs = 10
+    runs = 3
     print(f"Averaging startup times over {runs} runs...\n")
 
     # 2. Benchmark Python Startup (with --help to verify successful run)

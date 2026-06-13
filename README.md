@@ -35,7 +35,7 @@ For a detailed breakdown of why and how this utility was migrated from Python to
 
 By rewriting the CLI in Rust, we eliminated the interpreter import overhead and PyInstaller packaging bloat:
 
-* **Startup Latency:** Down from **327 ms** to **7.6 ms** (**42x faster** startup).
+* **Startup Latency:** Down from **364 ms** to **6.3 ms** (**58x faster** startup).
 * **Package Size:** Down from **20.0 MB** (zipped bundle containing a full Python runtime) to **3.75 MB** (standalone binary) (**80% smaller footprint**).
 
 ---

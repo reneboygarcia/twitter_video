@@ -20,7 +20,7 @@ This document records the engineering decisions, architectural changes, performa
 ## 1. Background & Context
 
 The original `twitdl` utility was written in Python. While Python enabled rapid prototyping, it suffered from several significant drawbacks for a developer command-line utility:
-1. **Startup Latency:** The Python interpreter startup overhead, combined with importing libraries like `rich`, `requests`, and `click`, resulted in an average startup latency of over **300 ms**.
+1. **Startup Latency:** The Python interpreter startup overhead, combined with importing libraries like `rich`, `requests`, and `click`, resulted in an average startup latency of over **360 ms**.
 2. **Distribution & Package Size:** Packaging Python CLI tools for distribution (e.g., macOS Homebrew) without requiring a pre-installed Python version or managing virtual env drift requires using PyInstaller. This generated a massive **20.0 MB** zipped bundle (~35 MB unzipped) containing a full Python runtime.
 3. **Robustness:** Compile-time verification of type safety, path traversals, and error boundaries was limited.
 
@@ -92,7 +92,7 @@ The core requirement of the utility is to download videos from Twitter/X. To rem
 
 ## 4. Performance Time Trial Benchmarks
 
-Startup times and packaging footprints were measured using the time trial script [tests/benchmark.py](file:///Users/reneboygarcia/Documents/Github%20Projects/Twitter%20Video%20Downloader/tests/benchmark.py), averaging times over 10 consecutive runs.
+Startup times and packaging footprints were measured using the time trial script [tests/benchmark.py](file:///Users/reneboygarcia/Documents/Github%20Projects/Twitter%20Video%20Downloader/tests/benchmark.py), averaging times over 3 consecutive runs.
 
 ### Performance Summary
 
@@ -100,10 +100,10 @@ Startup times and packaging footprints were measured using the time trial script
 ============================================================
                      STARTUP TIME COMPARISON
 ============================================================
-Original Python Startup: 327.24 ms
-New Rust Startup:        7.67 ms
+Original Python Startup: 363.88 ms
+New Rust Startup:        6.26 ms
 
-Result: Rust is 42.7x faster (97.7% time saved)
+Result: Rust is 58.1x faster (98.3% time saved)
 ============================================================
                      PACKAGE SIZE COMPARISON
 ============================================================
@@ -114,8 +114,11 @@ Size reduction:             ~80.0% smaller footprint
 ```
 
 ### Key Takeaways
-- **42.7x Startup Speedup:** The Rust CLI launches in **7.67 milliseconds** (imperceptible to users) compared to **327.24 milliseconds** for the Python interpreter.
+- **58.1x Startup Speedup:** The Rust CLI launches in **6.26 milliseconds** (imperceptible to users) compared to **363.88 milliseconds** for the Python interpreter.
 - **80% Footprint Reduction:** The fully static compiled Rust binary is only **3.75 MB**, down from the **20.0 MB** zipped / **35.8 MB** unzipped PyInstaller bundle.
+- **Build & Installation Efficiency:**
+  - **Clean Installation (From Scratch):** Rust compiles from scratch in **42.87 seconds** (`cargo build --release`), which is **23% faster** than the Python virtual environment setup and PyInstaller bundling combined (**55.86 seconds**).
+  - **Incremental Compilation:** Rust's incremental rebuild takes only **4.60 seconds** (a **6.4x speedup** over PyInstaller's static **29.32-second** compilation).
 
 ---
 
