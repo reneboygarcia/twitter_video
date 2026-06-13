@@ -77,6 +77,12 @@ pub struct TwitterDownloader {
     quality_settings: std::collections::HashMap<String, (&'static str, &'static str)>,
 }
 
+impl Default for TwitterDownloader {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TwitterDownloader {
     pub fn new() -> Self {
         let mut quality_settings = std::collections::HashMap::new();
@@ -252,12 +258,10 @@ impl TwitterDownloader {
             };
 
             // Traversal check for relative paths
-            if !is_absolute {
-                if !resolved_path.starts_with(&downloads_dir_normalized) {
-                    return Err(
-                        "Path traversal detected: path escapes downloads directory.".to_string()
-                    );
-                }
+            if !is_absolute && !resolved_path.starts_with(&downloads_dir_normalized) {
+                return Err(
+                    "Path traversal detected: path escapes downloads directory.".to_string()
+                );
             }
 
             // Safety check against critical system directories
@@ -502,8 +506,8 @@ impl TwitterDownloader {
         });
 
         Ok(VideoInfo {
-            title: info.title.or_else(|| Some("Untitled".to_string())),
-            duration: info.duration.or_else(|| Some(0.0)),
+            title: info.title.or(Some("Untitled".to_string())),
+            duration: info.duration.or(Some(0.0)),
             formats: filtered_formats,
         })
     }

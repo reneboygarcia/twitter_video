@@ -332,15 +332,17 @@ impl TwitterDownloaderCLI {
 }
 
 fn main() {
-    let mut render_config = RenderConfig::default();
-    render_config.prompt_prefix = Styled::new("?").with_fg(Color::AnsiValue(39));
-    render_config.answered_prompt_prefix = Styled::new("✔").with_fg(Color::AnsiValue(39));
-    render_config.highlighted_option_prefix = Styled::new(">").with_fg(Color::AnsiValue(39));
-    render_config.selected_option = Some(StyleSheet::new().with_fg(Color::AnsiValue(39)));
-    render_config.answer = StyleSheet::new().with_fg(Color::AnsiValue(39));
-    render_config.help_message = StyleSheet::new().with_fg(Color::AnsiValue(243));
-    render_config.default_value = StyleSheet::new().with_fg(Color::AnsiValue(243));
-    render_config.placeholder = StyleSheet::new().with_fg(Color::AnsiValue(243));
+    let render_config = RenderConfig {
+        prompt_prefix: Styled::new("?").with_fg(Color::AnsiValue(39)),
+        answered_prompt_prefix: Styled::new("✔").with_fg(Color::AnsiValue(39)),
+        highlighted_option_prefix: Styled::new(">").with_fg(Color::AnsiValue(39)),
+        selected_option: Some(StyleSheet::new().with_fg(Color::AnsiValue(39))),
+        answer: StyleSheet::new().with_fg(Color::AnsiValue(39)),
+        help_message: StyleSheet::new().with_fg(Color::AnsiValue(243)),
+        default_value: StyleSheet::new().with_fg(Color::AnsiValue(243)),
+        placeholder: StyleSheet::new().with_fg(Color::AnsiValue(243)),
+        ..RenderConfig::default()
+    };
     inquire::set_global_render_config(render_config);
 
     let args = Args::parse();
