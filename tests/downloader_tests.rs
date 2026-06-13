@@ -169,12 +169,26 @@ fn test_render_config_fields() {
     let mut config = inquire::ui::RenderConfig::default();
     config.prompt = inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(39));
     config.answer = inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::rgb(29, 161, 242));
-    config.help_message = inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(243));
-    config.default_value = inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(243));
+    config.help_message =
+        inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(243));
+    config.default_value =
+        inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(243));
     config.placeholder = inquire::ui::StyleSheet::new().with_fg(inquire::ui::Color::AnsiValue(243));
     assert_eq!(config.prompt.fg, Some(inquire::ui::Color::AnsiValue(39)));
-    assert_eq!(config.answer.fg, Some(inquire::ui::Color::rgb(29, 161, 242)));
-    assert_eq!(config.help_message.fg, Some(inquire::ui::Color::AnsiValue(243)));
-    assert_eq!(config.default_value.fg, Some(inquire::ui::Color::AnsiValue(243)));
-    assert_eq!(config.placeholder.fg, Some(inquire::ui::Color::AnsiValue(243)));
+    assert_eq!(
+        config.answer.fg,
+        Some(inquire::ui::Color::rgb(29, 161, 242))
+    );
+    assert_eq!(
+        config.help_message.fg,
+        Some(inquire::ui::Color::AnsiValue(243))
+    );
+    assert_eq!(
+        config.default_value.fg,
+        Some(inquire::ui::Color::AnsiValue(243))
+    );
+    assert_eq!(
+        config.placeholder.fg,
+        Some(inquire::ui::Color::AnsiValue(243))
+    );
 }

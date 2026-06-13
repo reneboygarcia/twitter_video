@@ -1,6 +1,9 @@
 use clap::Parser;
 use console::style;
-use inquire::{Select, Text, ui::{RenderConfig, Color, StyleSheet, Styled}};
+use inquire::{
+    ui::{Color, RenderConfig, StyleSheet, Styled},
+    Select, Text,
+};
 use std::time::Instant;
 use twitdl::downloader::TwitterDownloader;
 use twitdl::update_checker::UpdateChecker;
@@ -103,7 +106,12 @@ impl TwitterDownloaderCLI {
 
             match choice_res {
                 Ok("Exit") | Err(_) => {
-                    println!("\n{}", style("🐦 Flying off! Happy timeline scrolling! 🚀").color256(39).bold());
+                    println!(
+                        "\n{}",
+                        style("🐦 Flying off! Happy timeline scrolling! 🚀")
+                            .color256(39)
+                            .bold()
+                    );
                     std::process::exit(0);
                 }
                 Ok("Download a video") => {
@@ -214,7 +222,9 @@ impl TwitterDownloaderCLI {
                         "{} A new version is available: {}! Run {} to upgrade.\n",
                         style("🔔 Notification:").bold().color256(220),
                         style(format!("v{}", latest)).bold().color256(39),
-                        style("brew update && brew upgrade reneboygarcia/tap/twitdl").bold().color256(39)
+                        style("brew update && brew upgrade reneboygarcia/tap/twitdl")
+                            .bold()
+                            .color256(39)
                     );
                 } else {
                     println!();
@@ -275,7 +285,9 @@ impl TwitterDownloaderCLI {
         println!();
         println!(
             " {}",
-            style("🔄 Checking for updates from GitHub...").bold().white()
+            style("🔄 Checking for updates from GitHub...")
+                .bold()
+                .white()
         );
         let checker = UpdateChecker::new(VERSION);
         match checker.check_for_update_live() {
@@ -336,7 +348,12 @@ fn main() {
 
     // Set a global Ctrl+C handler for main process clean exit
     let _ = ctrlc::set_handler(|| {
-        println!("\n{}", style("🐦 Flying off! Happy timeline scrolling! 🚀").color256(39).bold());
+        println!(
+            "\n{}",
+            style("🐦 Flying off! Happy timeline scrolling! 🚀")
+                .color256(39)
+                .bold()
+        );
         std::process::exit(0);
     });
 
@@ -387,7 +404,9 @@ fn main() {
                             "{} A new version is available: {}! Run {} to upgrade.\n",
                             style("🔔 Notification:").bold().color256(220),
                             style(format!("v{}", latest)).bold().color256(39),
-                            style("brew update && brew upgrade reneboygarcia/tap/twitdl").bold().color256(39)
+                            style("brew update && brew upgrade reneboygarcia/tap/twitdl")
+                                .bold()
+                                .color256(39)
                         );
                     } else {
                         println!();
