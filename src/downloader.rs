@@ -1,7 +1,7 @@
 use chrono::Local;
 use serde::Deserialize;
 use std::fs;
-use std::io::{BufRead, BufReader};
+use std::io::{BufReader, Read};
 use std::path::{Component, Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
@@ -352,12 +352,11 @@ impl TwitterDownloader {
             .stderr(Stdio::piped())
             .spawn()
             .map_err(|e| format!("Failed to spawn yt-dlp: {}", e))?;
-
         let stdout = child
             .stdout
             .take()
             .ok_or_else(|| "Failed to open stdout of child".to_string())?;
-        let reader = BufReader::new(stdout);
+        let mut reader = BufReader::new(stdout);
 
         let pb = indicatif::ProgressBar::new_spinner();
         pb.set_style(
@@ -388,45 +387,67 @@ impl TwitterDownloader {
             std::process::exit(130);
         });
 
-        for line_res in reader.lines() {
-            if let Ok(line) = line_res {
-                if let Ok(progress_data) = serde_json::from_str::<ProgressJson>(&line) {
-                    if let Some(ref status) = progress_data.status {
-                        if status == "downloading" {
-                            let downloaded = progress_data.downloaded_bytes.unwrap_or(0);
-                            let total = progress_data
-                                .total_bytes
-                                .or(progress_data.total_bytes_estimate)
-                                .unwrap_or(0);
+        let mut line_buffer = Vec::new();
+        let mut byte_buf = [0u8; 1];
 
-                            if !has_started {
-                                has_started = true;
-                                pb.set_style(
-                                    indicatif::ProgressStyle::default_bar()
-                                        .template("{spinner:.bold.white} {msg:<26} [{bar:30.white/dim}] {percent:>3}% • {bytes}/{total_bytes} • {speed} • {eta}")
-                                        .unwrap()
-                                        .progress_chars("█░")
-                                );
-                                pb.set_message("Downloading");
-                                pb.set_length(total);
-                            }
+        while let Ok(n) = reader.read(&mut byte_buf) {
+            if n == 0 {
+                break; // EOF
+            }
+            let b = byte_buf[0];
+            if b == b'\r' || b == b'\n' {
+                if !line_buffer.is_empty() {
+                    let line = String::from_utf8_lossy(&line_buffer);
+                    let trimmed = line.trim();
+                    if !trimmed.is_empty() {
+                        if let Ok(progress_data) = serde_json::from_str::<ProgressJson>(trimmed) {
+                            if let Some(ref status) = progress_data.status {
+                                if status == "downloading" {
+                                    let downloaded = progress_data.downloaded_bytes.unwrap_or(0);
+                                    let total = progress_data
+                                        .total_bytes
+                                        .or(progress_data.total_bytes_estimate)
+                                        .unwrap_or(0);
 
-                            pb.set_position(downloaded);
-                            if total > 0 {
-                                pb.set_length(total);
+                                    if !has_started {
+                                        has_started = true;
+                                        pb.set_style(
+                                            indicatif::ProgressStyle::default_bar()
+                                                .template("{spinner:.bold.white} {msg:<12} [{bar:30.white/dim}] {percent:>3}% • {bytes}/{total_bytes} • {speed} • {eta}")
+                                                .unwrap()
+                                                .progress_chars("█░")
+                                        );
+                                        pb.set_message("Downloading");
+                                        pb.set_length(total);
+                                    }
+
+                                    pb.set_position(downloaded);
+                                    if total > 0 {
+                                        pb.set_length(total);
+                                    }
+                                } else if status == "finished" {
+                                    pb.set_message("Processing");
+                                }
                             }
-                        } else if status == "finished" {
-                            pb.set_message("Processing...");
                         }
                     }
+                    line_buffer.clear();
                 }
+            } else {
+                line_buffer.push(b);
             }
         }
 
         let status = child
             .wait()
             .map_err(|e| format!("Failed to wait on child: {}", e))?;
-        pb.finish_and_clear();
+
+        if status.success() {
+            pb.set_message("Finished");
+            pb.finish();
+        } else {
+            pb.finish_and_clear();
+        }
 
         if status.success() {
             if output_path.exists() {
