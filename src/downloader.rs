@@ -362,7 +362,7 @@ impl TwitterDownloader {
         pb.set_style(
             indicatif::ProgressStyle::default_spinner()
                 .tick_chars("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
-                .template("{spinner:.bold.white} {msg}")
+                .template("{spinner:.cyan.bold} {msg:.bold}")
                 .unwrap(),
         );
         pb.set_message("Resolving video stream...");
@@ -413,7 +413,7 @@ impl TwitterDownloader {
                                         has_started = true;
                                         pb.set_style(
                                             indicatif::ProgressStyle::default_bar()
-                                                .template("{spinner:.bold.white} {msg:<12} [{bar:30.white/dim}] {percent:>3}% • {bytes}/{total_bytes} • {speed} • {eta}")
+                                                .template("{spinner:.cyan.bold} {msg:<12} [{bar:30.cyan/dim}] {percent:>3}% • {bytes:.bold}/{total_bytes:.bold} • {speed:.cyan} • {eta:.cyan}")
                                                 .unwrap()
                                                 .progress_chars("█░")
                                         );

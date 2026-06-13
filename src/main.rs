@@ -103,7 +103,7 @@ impl TwitterDownloaderCLI {
 
             match choice_res {
                 Ok("Exit") | Err(_) => {
-                    println!("{}", style("👋 Goodbye!").yellow());
+                    println!("\n{}", style("🐦 Flying off! Happy timeline scrolling! 🚀").color256(39).bold());
                     std::process::exit(0);
                 }
                 Ok("Download a video") => {
@@ -203,7 +203,7 @@ impl TwitterDownloaderCLI {
                 let duration = start_time.elapsed().as_secs_f64();
                 println!(
                     "\n{} Video successfully downloaded to: {}",
-                    style("✔").bold().color256(40), // green
+                    style("✔").bold().color256(39), // Twitter Blue
                     style(&output_path).bold()
                 );
                 println!("(took {:.2} seconds)", duration);
@@ -295,7 +295,7 @@ impl TwitterDownloaderCLI {
             Ok(None) => {
                 println!(
                     "\n{} You are up to date! (Current version: {})",
-                    style("✔").bold().color256(40),
+                    style("✔").bold().color256(39), // Twitter Blue
                     style(format!("v{}", VERSION)).bold()
                 );
             }
@@ -325,7 +325,7 @@ fn main() {
 
     // Set a global Ctrl+C handler for main process clean exit
     let _ = ctrlc::set_handler(|| {
-        println!("\n{}", style("👋 Goodbye!").yellow());
+        println!("\n{}", style("🐦 Flying off! Happy timeline scrolling! 🚀").color256(39).bold());
         std::process::exit(0);
     });
 
@@ -365,7 +365,7 @@ fn main() {
                     let duration = start_time.elapsed().as_secs_f64();
                     println!(
                         "\n{} Video successfully downloaded to: {}",
-                        style("✔").bold().color256(40),
+                        style("✔").bold().color256(39), // Twitter Blue
                         style(&output_path).bold()
                     );
                     println!("(took {:.2} seconds)", duration);
