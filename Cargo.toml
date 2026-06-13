@@ -1,6 +1,6 @@
 [package]
 name = "twitdl"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 description = "An interactive and command-line tool to download videos from Twitter/X"
 authors = ["Rene Boy Garcia"]

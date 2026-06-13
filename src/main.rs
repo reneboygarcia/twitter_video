@@ -1,6 +1,6 @@
 use clap::Parser;
 use console::style;
-use inquire::{Select, Text};
+use inquire::{Select, Text, ui::{RenderConfig, Color, StyleSheet, Styled}};
 use std::time::Instant;
 use twitdl::downloader::TwitterDownloader;
 use twitdl::update_checker::UpdateChecker;
@@ -320,6 +320,13 @@ impl TwitterDownloaderCLI {
 }
 
 fn main() {
+    let mut render_config = RenderConfig::default();
+    render_config.prompt_prefix = Styled::new("?").with_fg(Color::LightCyan);
+    render_config.answered_prompt_prefix = Styled::new("✔").with_fg(Color::LightCyan);
+    render_config.highlighted_option_prefix = Styled::new(">").with_fg(Color::LightCyan);
+    render_config.selected_option = Some(StyleSheet::new().with_fg(Color::LightCyan));
+    inquire::set_global_render_config(render_config);
+
     let args = Args::parse();
     let cli = TwitterDownloaderCLI::new();
 
