@@ -155,44 +155,29 @@ impl TwitterDownloaderCLI {
         };
 
         // Save location
-        let path_options = vec![
-            "No (save to Downloads)",
-            "Yes (specify custom directory/file)",
-            "⟵ Back",
-        ];
+        let default_path = self
+            .downloader
+            .get_downloads_dir()
+            .to_string_lossy()
+            .into_owned();
 
-        let path_choice = Select::new(
-            "Do you want to specify a custom save location? (Default: Downloads folder)",
-            path_options,
-        )
-        .with_help_message("(Use ↑/↓ and Enter)")
-        .prompt();
+        let output_path_res = Text::new("Output directory:")
+            .with_default(&default_path)
+            .prompt();
 
         let mut output: Option<String> = None;
 
-        match path_choice {
-            Ok("No (save to Downloads)") => {}
-            Ok("Yes (specify custom directory/file)") => {
-                let default_path = self
-                    .downloader
-                    .get_downloads_dir()
-                    .to_string_lossy()
-                    .into_owned();
-                let output_path_res = Text::new("Enter the output path (type 'back' to return):")
-                    .with_default(&default_path)
-                    .prompt();
-
-                match output_path_res {
-                    Ok(path) => {
-                        if path.trim().to_lowercase() == "back" {
-                            return;
-                        }
-                        output = Some(path);
-                    }
-                    Err(_) => return, // Esc
+        match output_path_res {
+            Ok(path) => {
+                let trimmed = path.trim();
+                if trimmed.to_lowercase() == "back" {
+                    return;
+                }
+                if !trimmed.is_empty() {
+                    output = Some(trimmed.to_string());
                 }
             }
-            _ => return, // Esc or Back
+            Err(_) => return, // Esc
         }
 
         println!("\n{}", style("𝕏 Video Downloader").bold().white());
