@@ -2,9 +2,9 @@ class Twitdl < Formula
   env :std
   desc "Interactive CLI tool to download videos from Twitter/X"
   homepage "https://github.com/reneboygarcia/twitter_video"
-  url "https://github.com/reneboygarcia/twitter_video/archive/refs/tags/v0.2.1.tar.gz"
-  version "0.2.1"
-  sha256 "27016ee434faf1ff5af7f6beb5a03b0b3c19e8d1170d4d25e1d628abfcd41c0a"
+  url "https://github.com/reneboygarcia/twitter_video/archive/refs/tags/v0.2.2.tar.gz"
+  version "0.2.2"
+  sha256 "b91f6a5e1439c0b361b6f7688a0708a5e355e4ed934953cf0475717a3d6b2f98"
   head "https://github.com/reneboygarcia/twitter_video.git", branch: "main"
 
   depends_on "rust" => :build
