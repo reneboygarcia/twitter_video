@@ -104,6 +104,36 @@ impl UpdateChecker {
         None
     }
 
+    pub fn check_for_update_live(&self) -> Result<Option<String>, String> {
+        let latest_version = self
+            .fetch_latest_version_from_github()
+            .ok_or_else(|| "Failed to fetch latest version from GitHub".to_string())?;
+
+        // Write to cache
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let cache_data = CacheData {
+            latest_version: latest_version.clone(),
+            last_check: now,
+        };
+        if let Some(parent) = self.cache_file.parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        if let Ok(json_str) = serde_json::to_string(&cache_data) {
+            let _ = fs::write(&self.cache_file, json_str);
+        }
+
+        let current = Self::parse_version(&self.current_version);
+        let latest = Self::parse_version(&latest_version);
+        if latest > current {
+            Ok(Some(latest_version))
+        } else {
+            Ok(None)
+        }
+    }
+
     fn fetch_latest_version_from_github(&self) -> Option<String> {
         let url = "https://api.github.com/repos/reneboygarcia/twitter_video/releases/latest";
 

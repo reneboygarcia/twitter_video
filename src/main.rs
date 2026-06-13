@@ -84,11 +84,6 @@ impl TwitterDownloaderCLI {
                     .bold()
                     .color256(39)
             );
-        } else {
-            println!(
-                "{}",
-                style("💡 To update: brew update && brew upgrade reneboygarcia/tap/twitdl").dim()
-            );
         }
         println!();
     }
@@ -212,11 +207,18 @@ impl TwitterDownloaderCLI {
                     style(&output_path).bold()
                 );
                 println!("(took {:.2} seconds)", duration);
-                println!(
-                    "{}\n",
-                    style("💡 Keep twitdl up-to-date: brew update && brew upgrade reneboygarcia/tap/twitdl")
-                        .dim()
-                );
+                // Notify if a new version is available
+                let checker = UpdateChecker::new(VERSION);
+                if let Some(latest) = checker.check_for_update() {
+                    println!(
+                        "{} A new version is available: {}! Run {} to upgrade.\n",
+                        style("🔔 Notification:").bold().color256(220),
+                        style(format!("v{}", latest)).bold().color256(39),
+                        style("brew update && brew upgrade reneboygarcia/tap/twitdl").bold().color256(39)
+                    );
+                } else {
+                    println!();
+                }
             }
             Err(e) => {
                 println!("\n{} {}", style("❌").bold().red(), e);
@@ -273,20 +275,44 @@ impl TwitterDownloaderCLI {
         println!();
         println!(
             " {}",
-            style("🔄 How to Update 𝕏 Video Downloader").bold().white()
+            style("🔄 Checking for updates from GitHub...").bold().white()
         );
-        println!(
-            "Current version: {}",
-            style(format!("v{}", VERSION)).bold().color256(39)
-        );
-        println!("To check for and install updates, run the following command:");
-        println!();
-        println!(
-            "  {}",
-            style("brew update && brew upgrade reneboygarcia/tap/twitdl")
-                .bold()
-                .color256(39)
-        );
+        let checker = UpdateChecker::new(VERSION);
+        match checker.check_for_update_live() {
+            Ok(Some(latest_version)) => {
+                println!(
+                    "\n{} A new version is available: {}",
+                    style("🔔 Notification:").bold().color256(220),
+                    style(format!("v{}", latest_version)).bold().color256(39)
+                );
+                println!(
+                    "   Run {} to upgrade!",
+                    style("brew update && brew upgrade reneboygarcia/tap/twitdl")
+                        .bold()
+                        .color256(39)
+                );
+            }
+            Ok(None) => {
+                println!(
+                    "\n{} You are up to date! (Current version: {})",
+                    style("✔").bold().color256(40),
+                    style(format!("v{}", VERSION)).bold()
+                );
+            }
+            Err(e) => {
+                println!(
+                    "\n{} Could not reach GitHub to check for updates: {}",
+                    style("⚠️").bold().red(),
+                    e
+                );
+                println!(
+                    "   You can manually check or upgrade by running:\n   {}",
+                    style("brew update && brew upgrade reneboygarcia/tap/twitdl")
+                        .bold()
+                        .color256(39)
+                );
+            }
+        }
         println!();
         let _ = Text::new("Press Enter to return to main menu...").prompt();
         println!();
@@ -343,11 +369,18 @@ fn main() {
                         style(&output_path).bold()
                     );
                     println!("(took {:.2} seconds)", duration);
-                    println!(
-                        "{}\n",
-                        style("💡 Keep twitdl up-to-date: brew update && brew upgrade reneboygarcia/tap/twitdl")
-                            .dim()
-                    );
+                    // Check for updates again on success to notify user
+                    let checker = UpdateChecker::new(VERSION);
+                    if let Some(latest) = checker.check_for_update() {
+                        println!(
+                            "{} A new version is available: {}! Run {} to upgrade.\n",
+                            style("🔔 Notification:").bold().color256(220),
+                            style(format!("v{}", latest)).bold().color256(39),
+                            style("brew update && brew upgrade reneboygarcia/tap/twitdl").bold().color256(39)
+                        );
+                    } else {
+                        println!();
+                    }
                     std::process::exit(0);
                 }
                 Err(e) => {
