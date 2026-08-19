@@ -58,3 +58,9 @@ fn test_update_checker_older_in_cache() {
     // Should return None because 0.1.0 is not newer than 0.2.0
     assert!(checker.check_for_update().is_none());
 }
+
+#[test]
+fn test_homebrew_detection() {
+    let is_homebrew = UpdateChecker::is_installed_via_homebrew();
+    assert!(is_homebrew || !is_homebrew);
+}

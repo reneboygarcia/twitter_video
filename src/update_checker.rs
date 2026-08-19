@@ -156,4 +156,38 @@ impl UpdateChecker {
         }
         None
     }
+
+    pub fn is_installed_via_homebrew() -> bool {
+        if let Ok(exe_path) = std::env::current_exe() {
+            let path_str = exe_path.to_string_lossy().to_lowercase();
+            if path_str.contains("/cellar/")
+                || path_str.contains("/homebrew/")
+                || path_str.contains("/opt/homebrew/")
+            {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn perform_brew_upgrade() -> Result<(), String> {
+        let status = std::process::Command::new("brew")
+            .args(["upgrade", "reneboygarcia/tap/twitdl"])
+            .status()
+            .or_else(|_| {
+                std::process::Command::new("brew")
+                    .args(["upgrade", "twitdl"])
+                    .status()
+            })
+            .map_err(|e| format!("Failed to run brew command: {}", e))?;
+
+        if status.success() {
+            Ok(())
+        } else {
+            Err(format!(
+                "Homebrew upgrade exited with status code: {:?}",
+                status.code()
+            ))
+        }
+    }
 }

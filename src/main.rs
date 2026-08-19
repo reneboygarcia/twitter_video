@@ -1,9 +1,11 @@
-use clap::Parser;
+use clap::{CommandFactory, Parser, Subcommand};
+use clap_complete::{generate, Shell};
 use console::style;
 use inquire::{
     ui::{Color, RenderConfig, StyleSheet, Styled},
     Select, Text,
 };
+use std::io;
 use std::time::Instant;
 use twitdl::downloader::TwitterDownloader;
 use twitdl::update_checker::UpdateChecker;
@@ -32,6 +34,28 @@ struct Args {
     /// Force interactive guided mode
     #[arg(short, long)]
     guide: bool,
+
+    /// Check for updates and upgrade twitdl
+    #[arg(short = 'u', long)]
+    update: bool,
+
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Check for updates and upgrade twitdl
+    Update {
+        /// Check for updates without performing upgrade
+        #[arg(long)]
+        check_only: bool,
+    },
+    /// Generate shell completion scripts (zsh, bash, fish, powershell)
+    Completions {
+        /// Shell to generate completions for (zsh, bash, fish, powershell)
+        shell: String,
+    },
 }
 
 struct TwitterDownloaderCLI {
@@ -45,6 +69,113 @@ impl TwitterDownloaderCLI {
         }
     }
 
+    fn handle_update(&self, check_only: bool) -> i32 {
+        println!();
+        println!(
+            " {}",
+            style("🔄 Checking for updates from GitHub...")
+                .bold()
+                .white()
+        );
+
+        let checker = UpdateChecker::new(VERSION);
+        match checker.check_for_update_live() {
+            Ok(Some(latest_version)) => {
+                println!(
+                    "\n{} A new version is available! Current: {} -> Latest: {}",
+                    style("🔔 Notification:").bold().color256(220),
+                    style(format!("v{}", VERSION)).dim(),
+                    style(format!("v{}", latest_version)).bold().color256(39)
+                );
+
+                if check_only {
+                    println!(
+                        "   Run {} to upgrade!",
+                        style("twitdl update").bold().color256(39)
+                    );
+                    return 2;
+                }
+
+                if UpdateChecker::is_installed_via_homebrew() {
+                    println!(
+                        "{}",
+                        style("🚀 Upgrading twitdl via Homebrew...")
+                            .color256(39)
+                            .bold()
+                    );
+                    match UpdateChecker::perform_brew_upgrade() {
+                        Ok(_) => {
+                            println!(
+                                "{}",
+                                style("✔ Successfully upgraded twitdl!").color256(39).bold()
+                            );
+                            0
+                        }
+                        Err(e) => {
+                            println!(
+                                "{} Upgrading via Homebrew failed: {}",
+                                style("❌").bold().red(),
+                                e
+                            );
+                            println!(
+                                "   Try running manually: {}",
+                                style("brew update && brew upgrade reneboygarcia/tap/twitdl")
+                                    .bold()
+                                    .color256(39)
+                            );
+                            1
+                        }
+                    }
+                } else {
+                    println!(
+                        "   To upgrade, run:\n   {}",
+                        style("brew update && brew upgrade reneboygarcia/tap/twitdl")
+                            .bold()
+                            .color256(39)
+                    );
+                    2
+                }
+            }
+            Ok(None) => {
+                println!(
+                    "\n{} You are up to date! (Current version: {})",
+                    style("✔").bold().color256(39),
+                    style(format!("v{}", VERSION)).bold()
+                );
+                0
+            }
+            Err(e) => {
+                println!(
+                    "\n{} Could not reach GitHub to check for updates: {}",
+                    style("⚠️").bold().red(),
+                    e
+                );
+                1
+            }
+        }
+    }
+
+    fn generate_completions(&self, shell_str: &str) -> i32 {
+        let shell = match shell_str.to_lowercase().as_str() {
+            "bash" => Shell::Bash,
+            "zsh" => Shell::Zsh,
+            "fish" => Shell::Fish,
+            "powershell" | "pwsh" => Shell::PowerShell,
+            _ => {
+                eprintln!(
+                    "{} Unsupported shell '{}'. Supported: bash, zsh, fish, powershell",
+                    style("❌").bold().red(),
+                    shell_str
+                );
+                return 1;
+            }
+        };
+
+        let mut cmd = Args::command();
+        generate(shell, &mut cmd, "twitdl", &mut io::stdout());
+        0
+    }
+
     fn show_welcome(&self) {
         let ascii_art = vec![
             " ______  __     __   __   ______  _____    __",
@@ -56,11 +187,10 @@ impl TwitterDownloaderCLI {
 
         println!();
         for line in ascii_art {
-            // First 33 chars are stylized #1da1f2 (cyan-ish), rest is dim gray
             let part1 = &line[0..std::cmp::min(line.len(), 33)];
             let part2 = if line.len() > 33 { &line[33..] } else { "" };
-            print!("{}", style(part1).bold().color256(39)); // 39 is standard Cyan/Twitter Blue
-            println!("{}", style(part2).dim().color256(243)); // 243 is dim gray
+            print!("{}", style(part1).bold().color256(39));
+            println!("{}", style(part2).dim().color256(243));
         }
 
         println!(
@@ -73,19 +203,16 @@ impl TwitterDownloaderCLI {
             style("A simple CLI tool to download media from Twitter/X").color256(243)
         );
 
-        // Check for updates
         let checker = UpdateChecker::new(VERSION);
         if let Some(latest_version) = checker.check_for_update() {
             println!(
                 "\n{} A new version is available: {}",
-                style("🔔 Notification:").bold().color256(220), // gold
+                style("🔔 Notification:").bold().color256(220),
                 style(format!("v{}", latest_version)).bold().color256(39)
             );
             println!(
                 "   Run {} to upgrade!",
-                style("brew update && brew upgrade reneboygarcia/tap/twitdl")
-                    .bold()
-                    .color256(39)
+                style("twitdl update").bold().color256(39)
             );
         }
         println!();
@@ -121,7 +248,9 @@ impl TwitterDownloaderCLI {
                     self.show_info();
                 }
                 Ok("How to update / Check for updates") => {
-                    self.show_update_instructions();
+                    let _ = self.handle_update(false);
+                    let _ = Text::new("Press Enter to return to main menu...").prompt();
+                    println!();
                 }
                 _ => {}
             }
@@ -129,13 +258,11 @@ impl TwitterDownloaderCLI {
     }
 
     fn download_workflow(&self) {
-        // Get tweet URL
         let url = match self.get_tweet_url() {
             Some(u) => u,
             None => return,
         };
 
-        // Select video quality
         let qualities = vec![
             "Best (highest resolution / quality)",
             "Medium (balanced quality)",
@@ -151,10 +278,9 @@ impl TwitterDownloaderCLI {
             Ok("Best (highest resolution / quality)") => "best",
             Ok("Medium (balanced quality)") => "medium",
             Ok("Low (lowest resolution / smaller size)") => "low",
-            _ => return, // Esc or Back
+            _ => return,
         };
 
-        // Save location
         let default_path = self
             .downloader
             .get_downloads_dir()
@@ -177,7 +303,7 @@ impl TwitterDownloaderCLI {
                     output = Some(trimmed.to_string());
                 }
             }
-            Err(_) => return, // Esc
+            Err(_) => return,
         }
 
         println!("\n{}", style("𝕏 Video Downloader").bold().white());
@@ -196,20 +322,18 @@ impl TwitterDownloaderCLI {
                 let duration = start_time.elapsed().as_secs_f64();
                 println!(
                     "\n{} Video successfully downloaded to: {}",
-                    style("✔").bold().color256(39), // Twitter Blue
+                    style("✔").bold().color256(39),
                     style(&output_path).bold()
                 );
                 println!("(took {:.2} seconds)", duration);
-                // Notify if a new version is available
+
                 let checker = UpdateChecker::new(VERSION);
                 if let Some(latest) = checker.check_for_update() {
                     println!(
                         "{} A new version is available: {}! Run {} to upgrade.\n",
                         style("🔔 Notification:").bold().color256(220),
                         style(format!("v{}", latest)).bold().color256(39),
-                        style("brew update && brew upgrade reneboygarcia/tap/twitdl")
-                            .bold()
-                            .color256(39)
+                        style("twitdl update").bold().color256(39)
                     );
                 } else {
                     println!();
@@ -244,7 +368,7 @@ impl TwitterDownloaderCLI {
                             .red()
                     );
                 }
-                Err(_) => return None, // Esc
+                Err(_) => return None,
             }
         }
     }
@@ -258,58 +382,10 @@ impl TwitterDownloaderCLI {
         println!("  • Multiple quality settings (Best, Medium, Low)");
         println!("  • Custom output filenames and directory resolving");
         println!("  • Clean and graceful execution interrupt handling");
+        println!("  • Built-in update checker & Homebrew upgrade support (`twitdl update`)");
         println!();
         println!("{}", style("Repository:").bold());
         println!("  https://github.com/reneboygarcia/twitter_video");
-        println!();
-        let _ = Text::new("Press Enter to return to main menu...").prompt();
-        println!();
-    }
-
-    fn show_update_instructions(&self) {
-        println!();
-        println!(
-            " {}",
-            style("🔄 Checking for updates from GitHub...")
-                .bold()
-                .white()
-        );
-        let checker = UpdateChecker::new(VERSION);
-        match checker.check_for_update_live() {
-            Ok(Some(latest_version)) => {
-                println!(
-                    "\n{} A new version is available: {}",
-                    style("🔔 Notification:").bold().color256(220),
-                    style(format!("v{}", latest_version)).bold().color256(39)
-                );
-                println!(
-                    "   Run {} to upgrade!",
-                    style("brew update && brew upgrade reneboygarcia/tap/twitdl")
-                        .bold()
-                        .color256(39)
-                );
-            }
-            Ok(None) => {
-                println!(
-                    "\n{} You are up to date! (Current version: {})",
-                    style("✔").bold().color256(39), // Twitter Blue
-                    style(format!("v{}", VERSION)).bold()
-                );
-            }
-            Err(e) => {
-                println!(
-                    "\n{} Could not reach GitHub to check for updates: {}",
-                    style("⚠️").bold().red(),
-                    e
-                );
-                println!(
-                    "   You can manually check or upgrade by running:\n   {}",
-                    style("brew update && brew upgrade reneboygarcia/tap/twitdl")
-                        .bold()
-                        .color256(39)
-                );
-            }
-        }
         println!();
         let _ = Text::new("Press Enter to return to main menu...").prompt();
         println!();
@@ -333,7 +409,6 @@ fn main() {
     let args = Args::parse();
     let cli = TwitterDownloaderCLI::new();
 
-    // Set a global Ctrl+C handler for main process clean exit
     let _ = ctrlc::set_handler(|| {
         println!(
             "\n{}",
@@ -344,6 +419,25 @@ fn main() {
         std::process::exit(0);
     });
 
+    // Handle subcommands or update flag
+    if args.update {
+        let code = cli.handle_update(false);
+        std::process::exit(code);
+    }
+
+    if let Some(cmd) = args.command {
+        match cmd {
+            Commands::Update { check_only } => {
+                let code = cli.handle_update(check_only);
+                std::process::exit(code);
+            }
+            Commands::Completions { shell } => {
+                let code = cli.generate_completions(&shell);
+                std::process::exit(code);
+            }
+        }
+    }
+
     if let Some(ref url) = args.url {
         if !args.guide {
             // Direct download mode
@@ -353,11 +447,10 @@ fn main() {
                 style(format!("v{}", VERSION)).dim()
             );
 
-            // Check for update silently/quickly
             let checker = UpdateChecker::new(VERSION);
             if let Some(latest) = checker.check_for_update() {
                 println!(
-                    "{} A new version is available: {} (run `brew update && brew upgrade reneboygarcia/tap/twitdl` to upgrade)",
+                    "{} A new version is available: {} (run `twitdl update` to upgrade)",
                     style("🔔 Notification:").bold().color256(220),
                     style(format!("v{}", latest)).bold().color256(39)
                 );
@@ -380,20 +473,18 @@ fn main() {
                     let duration = start_time.elapsed().as_secs_f64();
                     println!(
                         "\n{} Video successfully downloaded to: {}",
-                        style("✔").bold().color256(39), // Twitter Blue
+                        style("✔").bold().color256(39),
                         style(&output_path).bold()
                     );
                     println!("(took {:.2} seconds)", duration);
-                    // Check for updates again on success to notify user
+
                     let checker = UpdateChecker::new(VERSION);
                     if let Some(latest) = checker.check_for_update() {
                         println!(
                             "{} A new version is available: {}! Run {} to upgrade.\n",
                             style("🔔 Notification:").bold().color256(220),
                             style(format!("v{}", latest)).bold().color256(39),
-                            style("brew update && brew upgrade reneboygarcia/tap/twitdl")
-                                .bold()
-                                .color256(39)
+                            style("twitdl update").bold().color256(39)
                         );
                     } else {
                         println!();

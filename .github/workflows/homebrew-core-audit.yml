@@ -1,0 +1,27 @@
+name: Homebrew Formula Audit
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Formula/**'
+      - '.github/workflows/homebrew-core-audit.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'Formula/**'
+      - '.github/workflows/homebrew-core-audit.yml'
+
+jobs:
+  audit-formula:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Audit Homebrew Formula
+        run: |
+          HOMEBREW_NO_AUTO_UPDATE=1 brew audit --strict --online Formula/twitdl.rb

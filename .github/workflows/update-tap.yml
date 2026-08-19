@@ -1,0 +1,73 @@
+name: Update Homebrew Tap Formula
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. v0.2.8)'
+        required: true
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Calculate release archive SHA-256
+        id: sha
+        run: |
+          VERSION="${{ github.event.release.tag_name || github.event.inputs.version }}"
+          URL="https://github.com/reneboygarcia/twitter_video/archive/refs/tags/${VERSION}.tar.gz"
+          curl -sL "$URL" -o release.tar.gz
+          SHA=$(sha256sum release.tar.gz | awk '{print $1}')
+          echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
+          echo "sha256=${SHA}" >> $GITHUB_OUTPUT
+
+      - name: Update Formula in homebrew-tap
+        run: |
+          VERSION="${{ steps.sha.outputs.version }}"
+          SHA256="${{ steps.sha.outputs.sha256 }}"
+          echo "Updating Formula/twitdl.rb to version $VERSION ($SHA256)..."
+          
+          cat <<EOF > homebrew-tap/Formula/twitdl.rb
+          class Twitdl < Formula
+            desc "Interactive CLI tool to download videos from Twitter/X"
+            homepage "https://github.com/reneboygarcia/twitter_video"
+            url "https://github.com/reneboygarcia/twitter_video/archive/refs/tags/v${VERSION}.tar.gz"
+            sha256 "${SHA256}"
+            license "MIT"
+            head "https://github.com/reneboygarcia/twitter_video.git", branch: "main"
+
+            depends_on "rust" => :build
+            depends_on "yt-dlp"
+
+            def install
+              system "cargo", "install", *std_cargo_args
+            end
+
+            def caveats
+              <<~EOS
+                Once installed, you can start twitdl from your terminal:
+
+                Interactive mode:
+                  twitdl
+
+                Direct download mode:
+                  twitdl <tweet-url>
+
+                Check for updates / upgrade:
+                  twitdl update
+
+                For full usage options:
+                  twitdl --help
+              EOS
+            end
+
+            test do
+              system bin/"twitdl", "--help"
+            end
+          end
+          EOF
