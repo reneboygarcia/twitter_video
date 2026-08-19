@@ -83,6 +83,23 @@ impl Default for TwitterDownloader {
     }
 }
 
+pub fn is_twitter_url(url: &str) -> bool {
+    let lower = url.trim().to_lowercase();
+    let stripped = lower
+        .strip_prefix("https://")
+        .or_else(|| lower.strip_prefix("http://"))
+        .unwrap_or(&lower);
+
+    stripped.starts_with("twitter.com/")
+        || stripped.starts_with("x.com/")
+        || stripped.starts_with("www.twitter.com/")
+        || stripped.starts_with("www.x.com/")
+        || stripped.starts_with("mobile.twitter.com/")
+        || stripped.starts_with("mobile.x.com/")
+        || stripped.starts_with("fixupx.com/")
+        || stripped.starts_with("vxtwitter.com/")
+}
+
 impl TwitterDownloader {
     pub fn new() -> Self {
         let mut quality_settings = std::collections::HashMap::new();
@@ -103,6 +120,21 @@ impl TwitterDownloader {
         quality_settings.insert("low".to_string(), ("worst[ext=mp4]", "mp4"));
 
         Self { quality_settings }
+    }
+
+    pub fn get_quality_options(quality: &str) -> Option<(&'static str, &'static str)> {
+        match quality {
+            "best" => Some((
+                "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+                "mp4",
+            )),
+            "medium" => Some((
+                "worstvideo[height>=480][ext=mp4]+worstaudio[ext=m4a]/worst[height>=480][ext=mp4]",
+                "mp4",
+            )),
+            "low" => Some(("worst[ext=mp4]", "mp4")),
+            _ => None,
+        }
     }
 
     pub fn get_log_file_path(&self) -> PathBuf {
@@ -172,6 +204,8 @@ impl TwitterDownloader {
             "/proc",
             "/sys",
             "/root",
+            "/usr",
+            "/var",
         ];
 
         for prefix in &critical_prefixes {
@@ -211,23 +245,23 @@ impl TwitterDownloader {
     }
 
     pub fn extract_tweet_id(&self, url: &str) -> Result<String, String> {
-        if url.is_empty() {
+        let trimmed_url = url.trim();
+        if trimmed_url.is_empty() {
             return Err("URL cannot be empty".to_string());
         }
 
-        let parts: Vec<&str> = url.split('/').collect();
+        let url_no_query = trimmed_url.split('?').next().unwrap_or(trimmed_url);
+        let cleaned = url_no_query.trim_end_matches('/');
+
+        let parts: Vec<&str> = cleaned.split('/').collect();
         if parts.len() < 2 {
             return Err(
                 "Invalid URL format: Could not extract a valid numeric tweet ID.".to_string(),
             );
         }
 
-        let last_part = parts
+        let tweet_id = parts
             .last()
-            .ok_or_else(|| "Invalid URL format".to_string())?;
-        let tweet_id = last_part
-            .split('?')
-            .next()
             .ok_or_else(|| "Invalid URL format".to_string())?;
 
         if tweet_id.is_empty() || !tweet_id.chars().all(|c| c.is_ascii_digit()) {
@@ -313,7 +347,7 @@ impl TwitterDownloader {
         output: Option<&str>,
         quality: &str,
     ) -> Result<String, String> {
-        if !url.starts_with("https://twitter.com/") && !url.starts_with("https://x.com/") {
+        if !is_twitter_url(url) {
             return Err("Only Twitter/X URLs are supported.".to_string());
         }
 
@@ -328,9 +362,8 @@ impl TwitterDownloader {
             let _ = fs::create_dir_all(parent);
         }
 
-        let quality_opts = self
-            .quality_settings
-            .get(quality)
+        let quality_opts = Self::get_quality_options(quality)
+            .or_else(|| self.quality_settings.get(quality).copied())
             .ok_or_else(|| "Invalid quality setting".to_string())?;
 
         let mut child = Command::new("yt-dlp")
@@ -373,7 +406,6 @@ impl TwitterDownloader {
         pb.enable_steady_tick(std::time::Duration::from_millis(80));
 
         let mut has_started = false;
-        let child_id = child.id();
 
         // Safe cleanup guard setup
         let cleanup_guard = Arc::new(Mutex::new(CleanupGuard {
@@ -381,65 +413,48 @@ impl TwitterDownloader {
             active: true,
         }));
 
-        // Set up ctrlc handler
-        let cleanup_guard_clone = Arc::clone(&cleanup_guard);
-        let _ = ctrlc::set_handler(move || {
-            let mut guard = cleanup_guard_clone.lock().unwrap();
-            // Kill child process
-            let _ = Command::new("kill").arg(child_id.to_string()).status();
-            guard.active = true;
-            std::process::exit(130);
-        });
-
+        use std::io::BufRead;
         let mut line_buffer = Vec::new();
-        let mut byte_buf = [0u8; 1];
 
-        while let Ok(n) = reader.read(&mut byte_buf) {
+        while let Ok(n) = reader.read_until(b'\r', &mut line_buffer) {
             if n == 0 {
                 break; // EOF
             }
-            let b = byte_buf[0];
-            if b == b'\r' || b == b'\n' {
-                if !line_buffer.is_empty() {
-                    let line = String::from_utf8_lossy(&line_buffer);
-                    let trimmed = line.trim();
-                    if !trimmed.is_empty() {
-                        if let Ok(progress_data) = serde_json::from_str::<ProgressJson>(trimmed) {
-                            if let Some(ref status) = progress_data.status {
-                                if status == "downloading" {
-                                    let downloaded = progress_data.downloaded_bytes.unwrap_or(0);
-                                    let total = progress_data
-                                        .total_bytes
-                                        .or(progress_data.total_bytes_estimate)
-                                        .unwrap_or(0);
+            let line = String::from_utf8_lossy(&line_buffer);
+            let trimmed = line.trim();
+            if !trimmed.is_empty() {
+                if let Ok(progress_data) = serde_json::from_str::<ProgressJson>(trimmed) {
+                    if let Some(ref status) = progress_data.status {
+                        if status == "downloading" {
+                            let downloaded = progress_data.downloaded_bytes.unwrap_or(0);
+                            let total = progress_data
+                                .total_bytes
+                                .or(progress_data.total_bytes_estimate)
+                                .unwrap_or(0);
 
-                                    if !has_started {
-                                        has_started = true;
-                                        pb.set_style(
-                                            indicatif::ProgressStyle::default_bar()
-                                                .template("{spinner:.cyan.bold} {msg:<12} [{bar:30.cyan/dim}] {percent:>3}% • {bytes:.bold}/{total_bytes:.bold} • {speed:.cyan} • {eta:.cyan}")
-                                                .unwrap()
-                                                .progress_chars("█░")
-                                        );
-                                        pb.set_message("Downloading");
-                                        pb.set_length(total);
-                                    }
-
-                                    pb.set_position(downloaded);
-                                    if total > 0 {
-                                        pb.set_length(total);
-                                    }
-                                } else if status == "finished" {
-                                    pb.set_message("Processing");
-                                }
+                            if !has_started {
+                                has_started = true;
+                                pb.set_style(
+                                    indicatif::ProgressStyle::default_bar()
+                                        .template("{spinner:.cyan.bold} {msg:<12} [{bar:30.cyan/dim}] {percent:>3}% • {bytes:.bold}/{total_bytes:.bold} • {speed:.cyan} • {eta:.cyan}")
+                                        .unwrap()
+                                        .progress_chars("█░")
+                                );
+                                pb.set_message("Downloading");
+                                pb.set_length(total);
                             }
+
+                            pb.set_position(downloaded);
+                            if total > 0 {
+                                pb.set_length(total);
+                            }
+                        } else if status == "finished" {
+                            pb.set_message("Processing");
                         }
                     }
-                    line_buffer.clear();
                 }
-            } else {
-                line_buffer.push(b);
             }
+            line_buffer.clear();
         }
 
         let status = child
@@ -465,7 +480,6 @@ impl TwitterDownloader {
             // Read stderr for detailed error
             let mut stderr_msg = String::new();
             if let Some(mut stderr) = child.stderr.take() {
-                use std::io::Read;
                 let _ = stderr.read_to_string(&mut stderr_msg);
             }
             if stderr_msg.is_empty() {
@@ -506,7 +520,7 @@ impl TwitterDownloader {
         });
 
         Ok(VideoInfo {
-            title: info.title.or(Some("Untitled".to_string())),
+            title: info.title.or_else(|| Some("Untitled".to_string())),
             duration: info.duration.or(Some(0.0)),
             formats: filtered_formats,
         })
