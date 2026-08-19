@@ -357,15 +357,12 @@ impl TwitterDownloaderCLI {
                     if trimmed.to_lowercase() == "back" {
                         return None;
                     }
-                    if trimmed.starts_with("https://twitter.com/")
-                        || trimmed.starts_with("https://x.com/")
-                    {
+                    if twitdl::downloader::is_twitter_url(&trimmed) {
                         return Some(trimmed);
                     }
                     println!(
                         "{}",
-                        style("⚠️ Invalid URL. Must start with https://twitter.com/ or https://x.com/")
-                            .red()
+                        style("⚠️ Invalid URL. Must be a valid Twitter/X video URL.").red()
                     );
                 }
                 Err(_) => return None,
