@@ -439,6 +439,11 @@ fn main() {
     }
 
     if let Some(ref url) = args.url {
+        if url == "update" {
+            let code = cli.handle_update(false);
+            std::process::exit(code);
+        }
+
         if !args.guide {
             // Direct download mode
             println!(
