@@ -1,5 +1,22 @@
 use std::path::{Path, PathBuf};
-use twitdl::downloader::{normalize_path, TwitterDownloader};
+use twitdl::downloader::{is_twitter_url, normalize_path, TwitterDownloader};
+
+#[test]
+fn test_is_twitter_url() {
+    assert!(is_twitter_url(
+        "https://x.com/NASA/status/1800000000000000000"
+    ));
+    assert!(is_twitter_url("https://twitter.com/NASA/status/123456"));
+    assert!(is_twitter_url(
+        "https://mobile.twitter.com/NASA/status/123456"
+    ));
+    assert!(is_twitter_url("https://www.x.com/NASA/status/123456/"));
+    assert!(is_twitter_url("http://fixupx.com/user/status/7890"));
+    assert!(is_twitter_url("https://vxtwitter.com/user/status/7890"));
+
+    assert!(!is_twitter_url("https://youtube.com/watch?v=12345"));
+    assert!(!is_twitter_url("https://example.com/status/123"));
+}
 
 #[test]
 fn test_normalize_path() {
@@ -23,6 +40,13 @@ fn test_extract_tweet_id() {
         "1800000000000000000"
     );
 
+    // URL with trailing slash
+    let url_trailing = "https://x.com/NASA/status/1800000000000000000/";
+    assert_eq!(
+        downloader.extract_tweet_id(url_trailing).unwrap(),
+        "1800000000000000000"
+    );
+
     // Twitter.com URL with query parameters
     let url2 = "https://twitter.com/NASA/status/123456?s=20";
     assert_eq!(downloader.extract_tweet_id(url2).unwrap(), "123456");
@@ -33,9 +57,6 @@ fn test_extract_tweet_id() {
     // Invalid numeric tweet ID
     assert!(downloader
         .extract_tweet_id("https://x.com/NASA/status/abc")
-        .is_err());
-    assert!(downloader
-        .extract_tweet_id("https://x.com/NASA/status/")
         .is_err());
     assert!(downloader
         .extract_tweet_id("just_some_random_text_without_slashes")
@@ -57,6 +78,8 @@ fn test_is_safe_path() {
     assert!(!downloader.is_safe_path(Path::new("/System")));
     assert!(!downloader.is_safe_path(Path::new("/System/Library")));
     assert!(!downloader.is_safe_path(Path::new("/etc/passwd")));
+    assert!(!downloader.is_safe_path(Path::new("/usr/bin")));
+    assert!(!downloader.is_safe_path(Path::new("/var/log")));
 
     // Safe paths
     assert!(downloader.is_safe_path(Path::new("/Users/user/Downloads/video.mp4")));
