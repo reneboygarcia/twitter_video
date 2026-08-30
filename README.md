@@ -43,6 +43,7 @@ We rewrote the command-line tool in Rust to reduce startup overhead and binary s
 
 ```bash
 brew tap reneboygarcia/tap
+brew trust reneboygarcia/tap
 brew install twitdl
 ```
 
