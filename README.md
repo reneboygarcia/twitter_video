@@ -36,76 +36,54 @@ We rewrote the command-line tool in Rust to reduce startup overhead and binary s
 
 ---
 
-## Installation
+## Quick Start
 
-### Using Homebrew on macOS or Linux
+**Install via Homebrew**
 
-You can install the tool from Homebrew using the tap path:
-
-```sh
+```bash
 brew install reneboygarcia/tap/twitdl
 ```
 
-Or you can tap the repository first, and then run install:
+**Or via script**
 
-```sh
-brew tap reneboygarcia/tap
-brew install twitdl
+```bash
+curl -fsSL https://raw.githubusercontent.com/reneboygarcia/twitter_video/main/install.sh | bash
 ```
 
-Once installed, you can start the application from your terminal by running:
+**Run**
 
-```sh
-twitdl
+```bash
+twitdl                                                          # Interactive menu
+twitdl <tweet-url>                                              # Direct download (best quality)
+twitdl <tweet-url> --quality best --output ~/Desktop/video.mp4  # Custom quality and output path
+twitdl update                                                   # Check for updates and upgrade
+twitdl update --check-only                                      # Check for updates without upgrading
+twitdl completions zsh                                          # Shell tab completion for Zsh
+twitdl --help                                                   # Show help text
+twitdl --version                                                # Show version information
 ```
 
-### Manual installation from source
+<details>
+<summary><strong>Manual installation from source</strong></summary>
 
-#### Prerequisites
+### Prerequisites
 1. **Rust toolchain**: Install Rust and Cargo from [rust-lang.org](https://www.rust-lang.org/tools/install).
 2. **Subprocess dependency**: Install `yt-dlp` on your system so it is available in your PATH.
 
-#### Installation steps
-First, clone the repository:
-
-```sh
+### Installation steps
+```bash
 git clone https://github.com/reneboygarcia/twitter_video.git
 cd twitter_video
+cargo build --release
+cargo install --path .
 ```
 
-Second, build the release binary:
-
-```sh
-make build
-```
-
-Third, install the binary locally:
-
-```sh
-make install
-```
+</details>
 
 ---
 
-## Usage
+## Command options
 
-### Interactive mode
-
-Run `twitdl` without arguments to start the interactive prompt:
-
-```sh
-twitdl
-```
-
-### Direct command mode
-
-Download a video immediately by providing the tweet URL and optional arguments:
-
-```sh
-twitdl <tweet-url> --quality best --output ~/Desktop/video.mp4
-```
-
-#### Command options:
 - `-q, --quality <QUALITY>`: Video quality settings (`best`, `medium`, `low`).
 - `-o, --output <PATH>`: Custom output directory or file path.
 - `-g, --guide`: Force interactive guided mode.
