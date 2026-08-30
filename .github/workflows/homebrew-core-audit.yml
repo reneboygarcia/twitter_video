@@ -17,11 +17,14 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Homebrew
         uses: Homebrew/actions/setup-homebrew@master
 
       - name: Audit Homebrew Formula
         run: |
-          HOMEBREW_NO_AUTO_UPDATE=1 brew audit --strict --online Formula/twitdl.rb
+          TAP_DIR="$(brew --repository)/Library/Taps/local/homebrew-tap/Formula"
+          mkdir -p "$TAP_DIR"
+          cp Formula/twitdl.rb "$TAP_DIR/twitdl.rb"
+          HOMEBREW_NO_AUTO_UPDATE=1 brew audit --strict --online local/tap/twitdl

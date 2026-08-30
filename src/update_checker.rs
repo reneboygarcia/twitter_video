@@ -137,19 +137,20 @@ impl UpdateChecker {
     fn fetch_latest_version_from_github(&self) -> Option<String> {
         let url = "https://api.github.com/repos/reneboygarcia/twitter_video/releases/latest";
 
-        let agent = ureq::AgentBuilder::new()
-            .timeout(std::time::Duration::from_millis(1500))
+        let config = ureq::config::Config::builder()
+            .timeout_global(Some(std::time::Duration::from_millis(1500)))
             .build();
+        let agent: ureq::Agent = config.into();
 
-        let response = agent.get(url).set("User-Agent", "twitdl-cli").call();
+        let response = agent.get(url).header("User-Agent", "twitdl-cli").call();
 
-        if let Ok(res) = response {
+        if let Ok(mut res) = response {
             if res.status() == 200 {
                 #[derive(Deserialize)]
                 struct GithubRelease {
                     tag_name: String,
                 }
-                if let Ok(release) = res.into_json::<GithubRelease>() {
+                if let Ok(release) = res.body_mut().read_json::<GithubRelease>() {
                     return Some(release.tag_name.trim_start_matches('v').to_string());
                 }
             }
