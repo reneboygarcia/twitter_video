@@ -39,7 +39,7 @@ We rewrote the command-line tool in Rust to reduce startup overhead and binary s
 
 ## Quick Start
 
-**Install via Homebrew**
+**Install via Homebrew Tap**
 
 ```bash
 brew tap reneboygarcia/tap
