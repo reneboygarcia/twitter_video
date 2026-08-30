@@ -42,7 +42,8 @@ We rewrote the command-line tool in Rust to reduce startup overhead and binary s
 **Install via Homebrew**
 
 ```bash
-brew install reneboygarcia/tap/twitdl
+brew tap reneboygarcia/tap
+brew install twitdl
 ```
 
 **Or via script**
