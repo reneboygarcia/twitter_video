@@ -53,7 +53,7 @@ trap 'rm -rf "$TEMP_DIR"' EXIT
 
 echo "📦 Downloading twitdl ${LATEST_TAG} for ${PLATFORM}-${ARCH_NAME}..."
 
-if curl -sL "$DOWNLOAD_URL" -o "$TEMP_DIR/$TARBALL"; then
+if curl -fsSL "$DOWNLOAD_URL" -o "$TEMP_DIR/$TARBALL"; then
   tar -xzf "$TEMP_DIR/$TARBALL" -C "$TEMP_DIR"
   
   if [ ! -w "$INSTALL_DIR" ]; then
