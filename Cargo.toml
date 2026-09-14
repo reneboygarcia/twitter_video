@@ -13,7 +13,7 @@ indicatif = "0.18"
 ureq = { version = "3.4", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-dirs = "6.0"
+dirs = "7.0"
 console = "0.16"
 regex = "1.10"
 tempfile = "3.10"
