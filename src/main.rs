@@ -295,12 +295,12 @@ impl TwitterDownloaderCLI {
 
         match output_path_res {
             Ok(path) => {
-                let trimmed = path.trim();
-                if trimmed.to_lowercase() == "back" {
+                let cleaned = twitdl::downloader::clean_input(&path);
+                if cleaned.to_lowercase() == "back" {
                     return;
                 }
-                if !trimmed.is_empty() {
-                    output = Some(trimmed.to_string());
+                if !cleaned.is_empty() {
+                    output = Some(cleaned);
                 }
             }
             Err(_) => return,
@@ -353,12 +353,12 @@ impl TwitterDownloaderCLI {
 
             match url_res {
                 Ok(url) => {
-                    let trimmed = url.trim().to_string();
-                    if trimmed.to_lowercase() == "back" {
+                    let cleaned = twitdl::downloader::sanitize_url_input(&url);
+                    if cleaned.to_lowercase() == "back" {
                         return None;
                     }
-                    if twitdl::downloader::is_twitter_url(&trimmed) {
-                        return Some(trimmed);
+                    if twitdl::downloader::is_twitter_url(&cleaned) {
+                        return Some(cleaned);
                     }
                     println!(
                         "{}",

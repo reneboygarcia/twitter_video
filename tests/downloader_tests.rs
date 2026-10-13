@@ -1,5 +1,8 @@
 use std::path::{Path, PathBuf};
-use twitdl::downloader::{is_twitter_url, normalize_path, TwitterDownloader};
+use twitdl::downloader::{
+    clean_input, is_twitter_url, normalize_path, sanitize_path_input, sanitize_url_input,
+    TwitterDownloader,
+};
 
 #[test]
 fn test_is_twitter_url() {
@@ -213,5 +216,84 @@ fn test_render_config_fields() {
     assert_eq!(
         config.placeholder.fg,
         Some(inquire::ui::Color::AnsiValue(243))
+    );
+}
+
+#[test]
+fn test_clean_input() {
+    assert_eq!(clean_input("  hello  "), "hello");
+    assert_eq!(clean_input("\"hello world\""), "hello world");
+    assert_eq!(clean_input("'hello world'"), "hello world");
+    assert_eq!(clean_input(" \"'nested quotes'\" "), "nested quotes");
+    assert_eq!(
+        clean_input("   \"/Users/user/My Video.mp4\"   "),
+        "/Users/user/My Video.mp4"
+    );
+}
+
+#[test]
+fn test_sanitize_url_input() {
+    assert_eq!(
+        sanitize_url_input(" \"https://x.com/NASA/status/123456\" "),
+        "https://x.com/NASA/status/123456"
+    );
+    assert_eq!(
+        sanitize_url_input("'https://twitter.com/user/status/789'"),
+        "https://twitter.com/user/status/789"
+    );
+    assert_eq!(
+        sanitize_url_input("https://x.com/user/status/123\\"),
+        "https://x.com/user/status/123"
+    );
+}
+
+#[test]
+fn test_sanitize_path_input() {
+    // Escaped spaces
+    assert_eq!(
+        sanitize_path_input("/Users/user/My\\ Downloads/My\\ Video.mp4"),
+        PathBuf::from("/Users/user/My Downloads/My Video.mp4")
+    );
+
+    // Quotes around path
+    assert_eq!(
+        sanitize_path_input("\"/Users/user/My Downloads/My Video.mp4\""),
+        PathBuf::from("/Users/user/My Downloads/My Video.mp4")
+    );
+
+    // Tilde expansion
+    if let Some(home) = dirs::home_dir() {
+        assert_eq!(
+            sanitize_path_input("~/Downloads/My Video.mp4"),
+            home.join("Downloads/My Video.mp4")
+        );
+        assert_eq!(sanitize_path_input("~"), home);
+    }
+}
+
+#[test]
+fn test_get_output_path_with_spaces_and_quotes() {
+    let downloader = TwitterDownloader::new();
+    let url = " \"https://x.com/NASA/status/123456\" ";
+
+    // Double quoted output path with spaces
+    let out1 = downloader
+        .get_output_path(url, Some("\"/tmp/My Videos/my clip.mp4\""))
+        .unwrap();
+    assert_eq!(out1, PathBuf::from("/tmp/My Videos/my clip.mp4"));
+
+    // Shell escaped path with spaces
+    let out2 = downloader
+        .get_output_path(url, Some("/tmp/My\\ Videos/my\\ clip.mp4"))
+        .unwrap();
+    assert_eq!(out2, PathBuf::from("/tmp/My Videos/my clip.mp4"));
+
+    // Directory path with spaces and trailing slash
+    let out3 = downloader
+        .get_output_path(url, Some("'/tmp/My Videos/'"))
+        .unwrap();
+    assert_eq!(
+        out3,
+        PathBuf::from("/tmp/My Videos/twitter_video_123456.mp4")
     );
 }

@@ -40,8 +40,8 @@ esac
 LATEST_TAG=$(curl -sL "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 
 if [ -z "$LATEST_TAG" ]; then
-  echo "⚠️ Could not resolve latest release version tag. Falling back to v0.2.7."
-  LATEST_TAG="v0.2.7"
+  echo "⚠️ Could not resolve latest release version tag. Falling back to v0.2.8."
+  LATEST_TAG="v0.2.8"
 fi
 
 VERSION="${LATEST_TAG#v}"

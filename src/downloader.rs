@@ -83,8 +83,75 @@ impl Default for TwitterDownloader {
     }
 }
 
+pub fn clean_input(raw: &str) -> String {
+    let mut s = raw.trim();
+    loop {
+        let prev_len = s.len();
+        s = s.trim();
+        if ((s.starts_with('"') && s.ends_with('"')) || (s.starts_with('\'') && s.ends_with('\'')))
+            && s.len() >= 2
+        {
+            s = &s[1..s.len() - 1];
+        }
+        s = s.trim();
+        if s.len() == prev_len {
+            break;
+        }
+    }
+    s.to_string()
+}
+
+pub fn sanitize_url_input(raw: &str) -> String {
+    let cleaned = clean_input(raw);
+    let mut url = cleaned.trim().to_string();
+    if url.ends_with('\\') {
+        url = url.trim_end_matches('\\').trim().to_string();
+    }
+    url
+}
+
+pub fn sanitize_path_input(raw: &str) -> PathBuf {
+    let cleaned = clean_input(raw);
+    if cleaned.is_empty() {
+        return PathBuf::new();
+    }
+
+    let mut unescaped = String::with_capacity(cleaned.len());
+    let chars: Vec<char> = cleaned.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        if chars[i] == '\\' && i + 1 < chars.len() {
+            let next = chars[i + 1];
+            if matches!(
+                next,
+                ' ' | '(' | ')' | '[' | ']' | '&' | '\'' | '"' | '!' | '$' | '#' | '\\'
+            ) {
+                unescaped.push(next);
+                i += 2;
+                continue;
+            }
+        }
+        unescaped.push(chars[i]);
+        i += 1;
+    }
+
+    if unescaped == "~" {
+        if let Some(home) = dirs::home_dir() {
+            return home;
+        }
+    } else if unescaped.starts_with("~/") || unescaped.starts_with("~\\") {
+        if let Some(home) = dirs::home_dir() {
+            let rest = &unescaped[2..];
+            return home.join(rest);
+        }
+    }
+
+    PathBuf::from(unescaped)
+}
+
 pub fn is_twitter_url(url: &str) -> bool {
-    let lower = url.trim().to_lowercase();
+    let clean = sanitize_url_input(url);
+    let lower = clean.to_lowercase();
     let stripped = lower
         .strip_prefix("https://")
         .or_else(|| lower.strip_prefix("http://"))
@@ -245,12 +312,12 @@ impl TwitterDownloader {
     }
 
     pub fn extract_tweet_id(&self, url: &str) -> Result<String, String> {
-        let trimmed_url = url.trim();
-        if trimmed_url.is_empty() {
+        let clean_url = sanitize_url_input(url);
+        if clean_url.is_empty() {
             return Err("URL cannot be empty".to_string());
         }
 
-        let url_no_query = trimmed_url.split('?').next().unwrap_or(trimmed_url);
+        let url_no_query = clean_url.split('?').next().unwrap_or(&clean_url);
         let cleaned = url_no_query.trim_end_matches('/');
 
         let parts: Vec<&str> = cleaned.split('/').collect();
@@ -272,23 +339,39 @@ impl TwitterDownloader {
     }
 
     pub fn get_output_path(&self, url: &str, output: Option<&str>) -> Result<PathBuf, String> {
+        let clean_url = sanitize_url_input(url);
         let downloads_dir = self.get_downloads_dir();
-        let tweet_id = self.extract_tweet_id(url)?;
+        let tweet_id = self.extract_tweet_id(&clean_url)?;
         let downloads_dir_normalized = normalize_path(&downloads_dir);
 
-        if let Some(out) = output {
-            let custom_path = Path::new(out);
+        if let Some(out_raw) = output {
+            let cleaned_str = clean_input(out_raw);
+            if cleaned_str.is_empty() {
+                let default_path = downloads_dir.join(format!("twitter_video_{}.mp4", tweet_id));
+                let resolved_path = normalize_path(&default_path);
+                if !self.is_safe_path(&resolved_path) {
+                    return Err(format!(
+                        "Write safety violation: Default output path '{}' is a restricted system location.",
+                        resolved_path.display()
+                    ));
+                }
+                return Ok(resolved_path);
+            }
+
+            let custom_path = sanitize_path_input(out_raw);
             let is_absolute = custom_path.is_absolute();
 
-            let is_dir = out.ends_with('/')
-                || out.ends_with('\\')
+            let is_dir = cleaned_str.ends_with('/')
+                || cleaned_str.ends_with('\\')
+                || out_raw.trim().ends_with('/')
+                || out_raw.trim().ends_with('\\')
                 || custom_path.is_dir()
                 || custom_path == downloads_dir;
 
             let resolved_path = if is_absolute {
-                normalize_path(custom_path)
+                normalize_path(&custom_path)
             } else {
-                normalize_path(&downloads_dir.join(custom_path))
+                normalize_path(&downloads_dir.join(&custom_path))
             };
 
             // Traversal check for relative paths

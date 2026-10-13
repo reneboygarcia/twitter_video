@@ -9,65 +9,62 @@ on:
         description: 'Version tag (e.g. v0.2.8)'
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   update-formula:
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || github.event.inputs.version }}
     steps:
+      - name: Validate version tag
+        run: |
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid version tag '$TAG' (expected vX.Y.Z)"
+            exit 1
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v7
+        with:
+          repository: reneboygarcia/homebrew-tap
+          ssh-key: ${{ secrets.TAP_DEPLOY_KEY }}
+          path: homebrew-tap
 
       - name: Calculate release archive SHA-256
         id: sha
         run: |
-          VERSION="${{ github.event.release.tag_name || github.event.inputs.version }}"
-          URL="https://github.com/reneboygarcia/twitter_video/archive/refs/tags/${VERSION}.tar.gz"
-          curl -sL "$URL" -o release.tar.gz
-          SHA=$(sha256sum release.tar.gz | awk '{print $1}')
-          echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
-          echo "sha256=${SHA}" >> $GITHUB_OUTPUT
+          URL="https://github.com/reneboygarcia/twitter_video/archive/refs/tags/${TAG}.tar.gz"
+          curl -fsSL --retry 3 "$URL" -o release.tar.gz
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "sha256=$(sha256sum release.tar.gz | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
-      - name: Update Formula in homebrew-tap
+      - name: Render formula from Formula/twitdl.rb
+        env:
+          URL: ${{ steps.sha.outputs.url }}
+          SHA256: ${{ steps.sha.outputs.sha256 }}
         run: |
-          VERSION="${{ steps.sha.outputs.version }}"
-          SHA256="${{ steps.sha.outputs.sha256 }}"
-          echo "Updating Formula/twitdl.rb to version $VERSION ($SHA256)..."
-          
-          cat <<EOF > homebrew-tap/Formula/twitdl.rb
-          class Twitdl < Formula
-            desc "Interactive CLI tool to download videos from Twitter/X"
-            homepage "https://github.com/reneboygarcia/twitter_video"
-            url "https://github.com/reneboygarcia/twitter_video/archive/refs/tags/v${VERSION}.tar.gz"
-            sha256 "${SHA256}"
-            license "MIT"
-            head "https://github.com/reneboygarcia/twitter_video.git", branch: "main"
+          sed -e "s|^  url \".*\"|  url \"${URL}\"|" \
+              -e "s|^  sha256 \".*\"|  sha256 \"${SHA256}\"|" \
+              Formula/twitdl.rb > homebrew-tap/Formula/twitdl.rb
+          grep -qF "url \"${URL}\"" homebrew-tap/Formula/twitdl.rb
+          grep -qF "sha256 \"${SHA256}\"" homebrew-tap/Formula/twitdl.rb
+          cat homebrew-tap/Formula/twitdl.rb
 
-            depends_on "rust" => :build
-            depends_on "yt-dlp"
-
-            def install
-              system "cargo", "install", *std_cargo_args
-            end
-
-            def caveats
-              <<~EOS
-                Once installed, you can start twitdl from your terminal:
-
-                Interactive mode:
-                  twitdl
-
-                Direct download mode:
-                  twitdl <tweet-url>
-
-                Check for updates / upgrade:
-                  twitdl update
-
-                For full usage options:
-                  twitdl --help
-              EOS
-            end
-
-            test do
-              system bin/"twitdl", "--help"
-            end
-          end
-          EOF
+      - name: Commit and push to homebrew-tap
+        working-directory: homebrew-tap
+        run: |
+          if git diff --quiet; then
+            echo "Formula already up to date for ${TAG}."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "twitdl ${TAG#v}"
+          git push origin HEAD
