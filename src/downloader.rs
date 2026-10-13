@@ -88,10 +88,10 @@ pub fn clean_input(raw: &str) -> String {
     loop {
         let prev_len = s.len();
         s = s.trim();
-        if (s.starts_with('"') && s.ends_with('"')) || (s.starts_with('\'') && s.ends_with('\'')) {
-            if s.len() >= 2 {
-                s = &s[1..s.len() - 1];
-            }
+        if ((s.starts_with('"') && s.ends_with('"')) || (s.starts_with('\'') && s.ends_with('\'')))
+            && s.len() >= 2
+        {
+            s = &s[1..s.len() - 1];
         }
         s = s.trim();
         if s.len() == prev_len {
