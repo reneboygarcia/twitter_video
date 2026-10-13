@@ -1,8 +1,8 @@
 class Twitdl < Formula
   desc "Interactive CLI tool to download videos from Twitter/X"
   homepage "https://github.com/reneboygarcia/twitter_video"
-  url "https://github.com/reneboygarcia/twitter_video/archive/refs/tags/v0.2.7.tar.gz"
-  sha256 "02ab5e5ea24cb0d79078b61e52ecd1bab3ad94dd00a5c6ec2f71f0fbc92e6dde"
+  url "https://github.com/reneboygarcia/twitter_video/archive/refs/tags/v0.2.8.tar.gz"
+  sha256 "0abaf44836067db5cafb059bf6cf0ba37ca52e53195d30a13adfd9d8389494c0"
   license "MIT"
   head "https://github.com/reneboygarcia/twitter_video.git", branch: "main"
 
