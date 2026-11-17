@@ -14,13 +14,13 @@ Only the latest release of `twitter_video_dl` (via the `twitdl` executable) is a
 We take the security of this project seriously. If you find a security vulnerability, please do **not** open a public issue. Instead, report it privately to help protect users of this tool.
 
 You can report vulnerabilities by:
-- Creating a **Private Vulnerability Report** directly in the GitHub repository's Security tab (if enabled by repository settings).
+- Creating a **Private Vulnerability Report** from the repository's Security tab.
 - Contacting the maintainer directly at the email listed on the author profile/git commits (reneboygarcia@field-notes.dev).
 
 Please include the following information in your report:
 - A description of the vulnerability and its potential impact.
 - Step-by-step instructions (with proof-of-concept code, if available) to reproduce the issue.
-- Details about your environment (OS, Python version, package version).
+- Details about your environment (OS, `twitdl --version` output, `yt-dlp --version` output).
 
 ## Our Response Process
 
