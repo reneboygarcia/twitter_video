@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ['rust']
+        language: ['actions', 'rust']
 
     steps:
       - name: Checkout repository
