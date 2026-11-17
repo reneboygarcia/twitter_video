@@ -27,4 +27,5 @@ jobs:
           TAP_DIR="$(brew --repository)/Library/Taps/local/homebrew-tap/Formula"
           mkdir -p "$TAP_DIR"
           cp Formula/twitdl.rb "$TAP_DIR/twitdl.rb"
+          brew trust --tap local/tap
           HOMEBREW_NO_AUTO_UPDATE=1 brew audit --strict --online local/tap/twitdl
